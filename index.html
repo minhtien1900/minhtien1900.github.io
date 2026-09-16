@@ -1,8 +1,8 @@
-<!DOCTYPE html><html lang="vi" data-theme="light"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Bilingual E-Reader V24</title><script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script><style>:root{--bg-color: #f5f5f7;--text-color: #1d1d1f;--panel-bg: rgba(255, 255, 255, 0.9);--border-color: rgba(0, 0, 0, 0.1);--en-color: #0066cc;--vi-color: #2563eb;--highlight-bg: #fff3d6;--accent-color: #0071e3;--bottom-panel-bg: #ffffff;--shadow-color: rgba(0, 0, 0, 0.06);--reader-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, sans-serif;--reader-font-size: 18px;}[data-theme="dark"]{--bg-color: #000000;--text-color: #f5f5f7;--panel-bg: rgba(29, 29, 31, 0.9);--border-color: rgba(255, 255, 255, 0.15);--en-color: #2997ff;--vi-color: #60a5fa;--highlight-bg: #453511;--accent-color: #0071e3;--bottom-panel-bg: #1c1c1e;--shadow-color: rgba(0, 0, 0, 0.4);}*{box-sizing: border-box;margin: 0;padding: 0;-webkit-tap-highlight-color: transparent;}html, body{width: 100%;max-width: 100vw;overflow-x: hidden !important;position: relative;}body{font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;background-color: var(--bg-color);color: var(--text-color);display: flex;flex-direction: column;height: 100vh;overflow-y: hidden;transition: background 0.3s, color 0.3s;}header{display: flex;flex-direction: column;padding: 10px 14px;background-color: var(--panel-bg);backdrop-filter: blur(20px);-webkit-backdrop-filter: blur(20px);border-bottom: 1px solid var(--border-color);z-index: 1000;position: fixed;top: 0;left: 0;width: 100%;max-width: 100vw;gap: 8px;overflow-x: hidden;}.header-top-row{display: flex;justify-content: space-between;align-items: center;width: 100%;gap: 10px;}.progress-bar-container{position: absolute;bottom: 0;left: 0;width: 100%;height: 3px;background: transparent;overflow: hidden;display: none;}.progress-bar-fill{height: 100%;width: 0%;background-color: var(--accent-color);transition: width 0.3s ease;}.brand-title{font-size: 13px;font-weight: 600;letter-spacing: -0.01em;color: var(--text-color);flex: 1;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;}.header-info-group{display: flex;align-items: center;gap: 8px;flex: 1;min-width: 0;}.header-version{font-size: 10px;font-weight: 600;letter-spacing: 0.05em;color: var(--accent-color);background: var(--bg-color);padding: 2px 7px;border-radius: 20px;border: 1px solid var(--border-color);text-transform: uppercase;flex-shrink: 0;}.upload-section input[type="file"]{display: none;}.upload-btn{background-color: var(--accent-color);color: white;padding: 7px 14px;border-radius: 16px;cursor: pointer;font-weight: 500;font-size: 12px;display: inline-flex;align-items: center;gap: 5px;min-height: 36px;flex-shrink: 0;}.controls{display: flex;flex-wrap: wrap;gap: 6px;align-items: center;width: 100%;justify-content: flex-start;}button.control-btn, .auto-speak-btn-top, .save-pos-btn, select.control-select{background: rgba(120, 120, 128, 0.1);border: none;color: var(--text-color);padding: 7px 12px;border-radius: 14px;cursor: pointer;font-weight: 500;font-size: 12px;display: inline-flex;align-items: center;gap: 5px;min-height: 36px;transition: all 0.2s ease;}button.control-btn:active, .auto-speak-btn-top:active, .save-pos-btn:active, select.control-select:active{transform: scale(0.96);background: rgba(120, 120, 128, 0.2);}.auto-speak-btn-top.active{background-color: #34c759;color: white;}.save-pos-btn{background-color: var(--accent-color);color: white;}.main-container{display: flex;flex: 1;overflow: hidden;position: relative;flex-direction: column;margin-top: 96px;width: 100%;max-width: 100vw;}.reader-container{flex: 1;overflow-y: auto;overflow-x: hidden !important;padding: 16px 12px 140px 12px;display: flex;flex-direction: column;align-items: stretch;-webkit-overflow-scrolling: touch;width: 100%;max-width: 100vw;}.book-content{width: 100%;max-width: 100%;line-height: 1.9;font-family: var(--reader-font-family);font-size: var(--reader-font-size);background-color: var(--panel-bg);padding: 20px 20px;border-radius: 16px;box-shadow: 0 4px 24px var(--shadow-color);border: 1px solid var(--border-color);word-break: break-word;overflow-wrap: break-word;}.book-content p{margin-bottom: 20px;}.sentence-vi,.book-content i,.book-content em{color: var(--vi-color) !important;font-style: italic !important;display: block;margin-top: 6px;font-size: 0.95em;}span[title],[title]{cursor: pointer;border-radius: 3px;padding: 0 2px;transition: background 0.15s;}span[title]:hover,[title]:hover,span[title]:active,[title]:active{background-color: var(--highlight-bg) !important;text-decoration: underline;}.bottom-meaning-panel{position: absolute;bottom: 0;left: 0;width: 100%;background-color: var(--bottom-panel-bg);backdrop-filter: blur(20px);border-top: 1px solid var(--border-color);padding: 18px 20px;display: flex;justify-content: space-between;align-items: center;box-shadow: 0 -8px 24px var(--shadow-color);z-index: 100;transform: translateY(100%);transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);}.bottom-meaning-panel.active{transform: translateY(0);}.meaning-content{display: flex;flex-direction: column;gap: 4px;flex: 1;padding-right: 12px;min-width: 0;}.panel-word{font-size: 16px;font-weight: 600;color: var(--en-color);overflow: hidden;text-overflow: ellipsis;}.panel-definition{font-size: 14px;color: var(--text-color);}.panel-actions{display: flex;gap: 8px;align-items: center;flex-shrink: 0;}.modal-overlay{position: fixed;top: 0;left: 0;width: 100vw;height: 100vh;background: rgba(0,0,0,0.4);backdrop-filter: blur(4px);z-index: 2000;display: flex;align-items: center;justify-content: center;opacity: 0;pointer-events: none;transition: opacity 0.2s;}.modal-overlay.active{opacity: 1;pointer-events: auto;}.modal-box{background: var(--bottom-panel-bg);border: 1px solid var(--border-color);width: 90%;max-width: 500px;max-height: 80vh;border-radius: 20px;padding: 20px;display: flex;flex-direction: column;box-shadow: 0 10px 30px rgba(0,0,0,0.15);}.modal-header{display: flex;justify-content: space-between;align-items: center;margin-bottom: 12px;font-weight: 600;font-size: 16px;}.modal-body{overflow-y: auto;flex: 1;display: flex;flex-direction: column;gap: 10px;padding-right: 4px;}.vocab-item{background: rgba(120,120,128,0.06);padding: 10px 12px;border-radius: 12px;display: flex;flex-direction: column;gap: 3px;}.vocab-word{font-weight: 600;color: var(--en-color);font-size: 14px;}.vocab-ipa{color: #8e8e93;font-size: 12px;font-family: monospace;}.vocab-meaning{font-size: 13px;color: var(--text-color);}.book-item{background: rgba(120,120,128,0.06);padding: 12px;border-radius: 12px;display: flex;justify-content: space-between;align-items: center;cursor: pointer;transition: background 0.2s;}.book-item:hover{background: rgba(0,113,227,0.1);}.book-item-name{font-weight: 500;font-size: 14px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;flex: 1;margin-right: 10px;}.book-item-action{font-size: 12px;color: var(--accent-color);font-weight: 600;flex-shrink: 0;}.welcome-screen{display: flex;flex-direction: column;align-items: center;justify-content: center;height: 100%;text-align: center;color: var(--text-color);gap: 16px;background-color: var(--panel-bg);width: 100%;max-width: 650px;padding: 40px;border-radius: 16px;box-shadow: 0 4px 24px var(--shadow-color);border: 1px solid var(--border-color);margin: auto;}#epub-custom-styles{display: none;}</style><style id="epub-custom-styles"></style></head><body>
+<!DOCTYPE html><html lang="vi" data-theme="light"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Bilingual E-Reader V25</title><script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script><style>:root{--bg-color: #f5f5f7;--text-color: #1d1d1f;--panel-bg: rgba(255, 255, 255, 0.9);--border-color: rgba(0, 0, 0, 0.1);--en-color: #0066cc;--vi-color: #2563eb;--highlight-bg: #fff3d6;--accent-color: #0071e3;--bottom-panel-bg: #ffffff;--shadow-color: rgba(0, 0, 0, 0.06);--reader-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, sans-serif;--reader-font-size: 18px;}[data-theme="dark"]{--bg-color: #000000;--text-color: #f5f5f7;--panel-bg: rgba(29, 29, 31, 0.9);--border-color: rgba(255, 255, 255, 0.15);--en-color: #2997ff;--vi-color: #60a5fa;--highlight-bg: #453511;--accent-color: #0071e3;--bottom-panel-bg: #1c1c1e;--shadow-color: rgba(0, 0, 0, 0.4);}*{box-sizing: border-box;margin: 0;padding: 0;-webkit-tap-highlight-color: transparent;}html, body{width: 100%;max-width: 100vw;overflow-x: hidden !important;position: relative;}body{font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;background-color: var(--bg-color);color: var(--text-color);display: flex;flex-direction: column;height: 100vh;overflow-y: hidden;transition: background 0.3s, color 0.3s;}header{display: flex;flex-direction: column;padding: 10px 14px;background-color: var(--panel-bg);backdrop-filter: blur(20px);-webkit-backdrop-filter: blur(20px);border-bottom: 1px solid var(--border-color);z-index: 1000;position: fixed;top: 0;left: 0;width: 100%;max-width: 100vw;gap: 8px;overflow-x: hidden;}.header-top-row{display: flex;justify-content: space-between;align-items: center;width: 100%;gap: 10px;}.progress-bar-container{position: absolute;bottom: 0;left: 0;width: 100%;height: 3px;background: transparent;overflow: hidden;display: none;}.progress-bar-fill{height: 100%;width: 0%;background-color: var(--accent-color);transition: width 0.3s ease;}.brand-title{font-size: 13px;font-weight: 600;letter-spacing: -0.01em;color: var(--text-color);flex: 1;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;}.header-info-group{display: flex;align-items: center;gap: 8px;flex: 1;min-width: 0;}.header-version{font-size: 10px;font-weight: 600;letter-spacing: 0.05em;color: var(--accent-color);background: var(--bg-color);padding: 2px 7px;border-radius: 20px;border: 1px solid var(--border-color);text-transform: uppercase;flex-shrink: 0;}.upload-section input[type="file"]{display: none;}.upload-btn{background-color: var(--accent-color);color: white;padding: 7px 14px;border-radius: 16px;cursor: pointer;font-weight: 500;font-size: 12px;display: inline-flex;align-items: center;gap: 5px;min-height: 36px;flex-shrink: 0;}.controls{display: flex;flex-wrap: wrap;gap: 6px;align-items: center;width: 100%;justify-content: flex-start;}button.control-btn, .auto-speak-btn-top, .save-pos-btn, select.control-select{background: rgba(120, 120, 128, 0.1);border: none;color: var(--text-color);padding: 7px 12px;border-radius: 14px;cursor: pointer;font-weight: 500;font-size: 12px;display: inline-flex;align-items: center;gap: 5px;min-height: 36px;transition: all 0.2s ease;}button.control-btn:active, .auto-speak-btn-top:active, .save-pos-btn:active, select.control-select:active{transform: scale(0.96);background: rgba(120, 120, 128, 0.2);}.auto-speak-btn-top.active{background-color: #34c759;color: white;}.save-pos-btn{background-color: var(--accent-color);color: white;}.main-container{display: flex;flex: 1;overflow: hidden;position: relative;flex-direction: column;margin-top: 96px;width: 100%;max-width: 100vw;}.reader-container{flex: 1;overflow-y: auto;overflow-x: hidden !important;padding: 16px 12px 140px 12px;display: flex;flex-direction: column;align-items: stretch;-webkit-overflow-scrolling: touch;width: 100%;max-width: 100vw;}.book-content{width: 100%;max-width: 100%;line-height: 1.9;font-family: var(--reader-font-family);font-size: var(--reader-font-size);background-color: var(--panel-bg);padding: 20px 20px;border-radius: 16px;box-shadow: 0 4px 24px var(--shadow-color);border: 1px solid var(--border-color);word-break: break-word;overflow-wrap: break-word;}.book-content p{margin-bottom: 20px;}.book-content img{max-width: 100% !important;height: auto !important;display: block;margin: 14px auto;border-radius: 8px;}.book-content svg{max-width: 100% !important;height: auto !important;display: block;margin: 14px auto;}.sentence-vi,.book-content i,.book-content em{color: var(--vi-color) !important;font-style: italic !important;display: block;margin-top: 6px;font-size: 0.95em;}span[title],[title]{cursor: pointer;border-radius: 3px;padding: 0 2px;transition: background 0.15s;}span[title]:hover,[title]:hover,span[title]:active,[title]:active{background-color: var(--highlight-bg) !important;text-decoration: underline;}.bottom-meaning-panel{position: absolute;bottom: 0;left: 0;width: 100%;background-color: var(--bottom-panel-bg);backdrop-filter: blur(20px);border-top: 1px solid var(--border-color);padding: 18px 20px;display: flex;justify-content: space-between;align-items: center;box-shadow: 0 -8px 24px var(--shadow-color);z-index: 100;transform: translateY(100%);transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);}.bottom-meaning-panel.active{transform: translateY(0);}.meaning-content{display: flex;flex-direction: column;gap: 4px;flex: 1;padding-right: 12px;min-width: 0;}.panel-word{font-size: 16px;font-weight: 600;color: var(--en-color);overflow: hidden;text-overflow: ellipsis;}.panel-definition{font-size: 14px;color: var(--text-color);}.panel-actions{display: flex;gap: 8px;align-items: center;flex-shrink: 0;}.modal-overlay{position: fixed;top: 0;left: 0;width: 100vw;height: 100vh;background: rgba(0,0,0,0.4);backdrop-filter: blur(4px);z-index: 2000;display: flex;align-items: center;justify-content: center;opacity: 0;pointer-events: none;transition: opacity 0.2s;}.modal-overlay.active{opacity: 1;pointer-events: auto;}.modal-box{background: var(--bottom-panel-bg);border: 1px solid var(--border-color);width: 90%;max-width: 500px;max-height: 80vh;border-radius: 20px;padding: 20px;display: flex;flex-direction: column;box-shadow: 0 10px 30px rgba(0,0,0,0.15);}.modal-header{display: flex;justify-content: space-between;align-items: center;margin-bottom: 12px;font-weight: 600;font-size: 16px;}.modal-body{overflow-y: auto;flex: 1;display: flex;flex-direction: column;gap: 10px;padding-right: 4px;}.vocab-item{background: rgba(120,120,128,0.06);padding: 10px 12px;border-radius: 12px;display: flex;flex-direction: column;gap: 3px;}.vocab-word{font-weight: 600;color: var(--en-color);font-size: 14px;}.vocab-ipa{color: #8e8e93;font-size: 12px;font-family: monospace;}.vocab-meaning{font-size: 13px;color: var(--text-color);}.book-item{background: rgba(120,120,128,0.06);padding: 12px;border-radius: 12px;display: flex;justify-content: space-between;align-items: center;cursor: pointer;transition: background 0.2s;}.book-item:hover{background: rgba(0,113,227,0.1);}.book-item-name{font-weight: 500;font-size: 14px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;flex: 1;margin-right: 10px;}.book-item-action{font-size: 12px;color: var(--accent-color);font-weight: 600;flex-shrink: 0;}.welcome-screen{display: flex;flex-direction: column;align-items: center;justify-content: center;height: 100%;text-align: center;color: var(--text-color);gap: 16px;background-color: var(--panel-bg);width: 100%;max-width: 650px;padding: 40px;border-radius: 16px;box-shadow: 0 4px 24px var(--shadow-color);border: 1px solid var(--border-color);margin: auto;}#epub-custom-styles{display: none;}</style><style id="epub-custom-styles"></style></head><body>
 <header id="main-header">
   <div class="header-top-row">
     <div class="header-info-group">
-      <div class="header-version">V24</div>
+      <div class="header-version">V25</div>
       <div class="brand-title" id="brand-title-text">📁 Filename: No file selected</div>
     </div>
     <div class="upload-section">
@@ -35,8 +35,8 @@
 <main class="main-container">
   <div class="reader-container" id="reader-container">
     <div class="welcome-screen" id="welcome-screen">
-      <h2>Bilingual E-Reader V24</h2>
-      <p>Remembers button selections and configuration states.</p>
+      <h2>Bilingual E-Reader V25</h2>
+      <p>Now supports embedded EPUB images, cover rendering & persistent state.</p>
     </div>
     <div class="book-content" id="book-content" style="display: none;"></div>
   </div>
@@ -84,7 +84,7 @@ const fileInput=document.getElementById('epub-file'),bookContent=document.getEle
 const statsBtn=document.getElementById('stats-btn'),statsModal=document.getElementById('stats-modal'),closeStatsModal=document.getElementById('close-stats-modal'),statsModalBody=document.getElementById('stats-modal-body'),clearStatsBtn=document.getElementById('clear-stats-btn');
 const listBooksBtn=document.getElementById('list-books-btn'),booksModal=document.getElementById('books-modal'),closeBooksModal=document.getElementById('close-books-modal'),booksModalBody=document.getElementById('books-modal-body');
 
-let currentActiveWord="",activeBookKey="";
+let currentActiveWord="",activeBookKey="",activeBlobUrls=[];
 
 // 1. Khôi phục trạng thái nút Auto Speak
 let isAutoSpeakOn = localStorage.getItem('reader_auto_speak') === 'true';
@@ -114,6 +114,14 @@ async function loadFileFromIndexedDB(key){try{const db=await openDB();return new
 
 function getBookHistory(){try{return JSON.parse(localStorage.getItem('reader_book_history')||'[]');}catch(e){return [];}}
 function addBookToHistory(name, size){const key=`book_${name}_${size}`;let history=getBookHistory();history=history.filter(b=>b.key!==key);history.unshift({key, name, size});localStorage.setItem('reader_book_history',JSON.stringify(history));return key;}
+
+// Tự động thu hồi các Blob URLs cũ để tránh rò rỉ bộ nhớ (Memory Leak)
+function revokeActiveBlobUrls(){
+  if(activeBlobUrls.length > 0){
+    activeBlobUrls.forEach(url => URL.revokeObjectURL(url));
+    activeBlobUrls = [];
+  }
+}
 
 // Sự kiện bấm Auto Speak
 autoSpeakToggleBtn.addEventListener('click',()=>{
@@ -218,13 +226,30 @@ function renderBooksModal(){
 function updateProgress(p,t){progressContainer.style.display='block';progressFill.style.width=p+'%';bookContent.innerHTML=`<div style="text-align:center; padding: 50px 20px;"><div style="font-style:italic; margin-bottom: 12px; font-size: 16px;">⏳ ${t}</div><div style="font-weight:600; color: var(--accent-color); font-size: 18px;">${p}%</div></div>`;}
 
 async function processEpubData(buf,name,size, customKey=null){
+  revokeActiveBlobUrls();
   activeBookKey = customKey || addBookToHistory(name, size);
   welcomeScreen.style.display='none';
   bookContent.style.display='block';
   try{
     updateProgress(10,"Unzipping EPUB file...");
     const zip=new JSZip(),zipContent=await zip.loadAsync(buf);
-    updateProgress(30,"Reading book structure...");
+    
+    // Process and extract all image files from zip
+    updateProgress(25,"Processing book images...");
+    const imageMap = {};
+    const imageFiles = zipContent.file(/\.(jpg|jpeg|png|gif|svg|webp)$/i);
+    for (let imgFile of imageFiles) {
+      const blob = await imgFile.async("blob");
+      const blobUrl = URL.createObjectURL(blob);
+      activeBlobUrls.push(blobUrl);
+      
+      const fullPath = imgFile.name.toLowerCase();
+      const fileName = fullPath.split('/').pop();
+      imageMap[fullPath] = blobUrl;
+      imageMap[fileName] = blobUrl;
+    }
+
+    updateProgress(40,"Reading book structure...");
     const containerFile=zipContent.file("META-INF/container.xml");
     if(!containerFile)throw new Error("Missing container.xml");
     const containerDoc=new DOMParser().parseFromString(await containerFile.async("text"),"text/xml");
@@ -234,18 +259,21 @@ async function processEpubData(buf,name,size, customKey=null){
     const opfFile=zipContent.file(opfPath);
     if(!opfFile)throw new Error("Missing OPF");
     const opfDoc=new DOMParser().parseFromString(await opfFile.async("text"),"text/xml");
-    updateProgress(50,"Loading CSS definitions...");
+    
+    updateProgress(55,"Loading CSS definitions...");
     let combinedCSS="";
     opfDoc.querySelectorAll("item[media-type='text/css']").forEach(item=>{
       const cssFile=zipContent.file(opfFolder+item.getAttribute("href"));
       if(cssFile)cssFile.async("text").then(t=>combinedCSS+=t+"\n");
     });
     epubCustomStyles.textContent=combinedCSS;
+    
     const itemrefs=opfDoc.querySelectorAll("spine itemref"),manifestItems={};
     opfDoc.querySelectorAll("manifest item").forEach(item=>{
       manifestItems[item.getAttribute("id")]=item.getAttribute("href");
     });
-    updateProgress(70,"Merging chapter contents...");
+    
+    updateProgress(75,"Merging chapter contents...");
     let htmlFragments=[];
     for(let itemref of itemrefs){
       const href=manifestItems[itemref.getAttribute("idref")];
@@ -258,18 +286,48 @@ async function processEpubData(buf,name,size, customKey=null){
         }
       }
     }
+    
     if(htmlFragments.length===0){
       progressContainer.style.display='none';
       bookContent.innerHTML='<div style="text-align:center; padding: 40px;">Content not found.</div>';
       return;
     }
-    updateProgress(90,"Formatting bilingual layout...");
+    
+    updateProgress(90,"Formatting layout & resolving images...");
     setTimeout(()=>{
-      bookContent.innerHTML=htmlFragments.join('');
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlFragments.join('');
+
+      // Replace <img> tag src attributes
+      tempDiv.querySelectorAll('img').forEach(img => {
+        const src = img.getAttribute('src');
+        if (!src) return;
+        const cleanSrc = src.split('?')[0].split('#')[0].toLowerCase();
+        const fileName = cleanSrc.split('/').pop();
+        if (imageMap[cleanSrc] || imageMap[fileName]) {
+          img.src = imageMap[cleanSrc] || imageMap[fileName];
+        }
+      });
+
+      // Replace SVG image tag href attributes (Cover images & diagrams)
+      tempDiv.querySelectorAll('image').forEach(img => {
+        const href = img.getAttribute('href') || img.getAttribute('xlink:href');
+        if (!href) return;
+        const cleanHref = href.split('?')[0].split('#')[0].toLowerCase();
+        const fileName = cleanHref.split('/').pop();
+        if (imageMap[cleanHref] || imageMap[fileName]) {
+          const targetUrl = imageMap[cleanHref] || imageMap[fileName];
+          img.setAttribute('href', targetUrl);
+          img.setAttribute('xlink:href', targetUrl);
+        }
+      });
+
+      bookContent.innerHTML = tempDiv.innerHTML;
       formatBilingualLayout();
       attachTitleEvents();
       brandTitleText.textContent=`📁 Filename: ${name}`;
       progressContainer.style.display='none';
+      
       const savedScrollPos=localStorage.getItem(`pos_${activeBookKey}`);
       if(savedScrollPos){
         setTimeout(()=>{readerContainer.scrollTo({top:parseInt(savedScrollPos),behavior:'smooth'});},100);
