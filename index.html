@@ -1,4 +1,13 @@
-// Hàm loại bỏ dấu tiếng Việt
+// 1. Hàm Debounce chống giật lag khi gõ nhanh
+function debounce(func, delay = 300) {
+    let timeoutId;
+    return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+// 2. Hàm chuẩn hóa bỏ dấu tiếng Việt
 function removeVietnameseTones(str) {
     return str
         .normalize('NFD')
@@ -6,54 +15,68 @@ function removeVietnameseTones(str) {
         .replace(/đ/g, 'd').replace(/Đ/g, 'D');
 }
 
-// Hàm tìm kiếm và Highlight từ khóa trong văn bản
-function searchAndHighlight(searchText, containerElement) {
-    if (!containerElement) return { count: 0, results: [] };
+// 3. Hàm tìm kiếm siêu tốc (Tối ưu bộ nhớ & CPU)
+function FastSearch(searchText, contentText) {
+    // Xóa khoảng trắng thừa 2 đầu
+    const cleanSearch = searchText.trim();
+    if (!cleanSearch) return { count: 0, indices: [] };
 
-    // 1. Chuẩn hóa chuỗi tìm kiếm: Xóa khoảng trắng thừa ở 2 đầu và đưa về chữ thường
-    const cleanSearch = searchText.trim().toLowerCase();
-    if (!cleanSearch) return { count: 0, results: [] };
+    // Chuẩn hóa không dấu & chữ thường
+    const searchNormalized = removeVietnameseTones(cleanSearch.toLowerCase());
+    const contentNormalized = removeVietnameseTones(contentText.toLowerCase());
 
-    const cleanSearchNoTone = removeVietnameseTones(cleanSearch);
+    // Escaping các ký tự đặc biệt Regex để tránh lỗi crash
+    const escapedSearch = searchNormalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+    // Dùng Regex toàn cục để tìm cực nhanh
+    const regex = new RegExp(escapedSearch, 'gi');
+    const matches = [];
+    let match;
 
-    // Lấy toàn bộ văn bản trong container
-    const content = containerElement.innerText || containerElement.textContent;
-    const contentLower = content.toLowerCase();
-    const contentNoTone = removeVietnameseTones(contentLower);
-
-    let matchCount = 0;
-    let matchIndices = [];
-
-    // 2. Tìm kiếm theo cả 2 chế độ: Có dấu và Không dấu
-    let startIndex = 0;
-    while (startIndex < content.length) {
-        // Tìm vị trí xuất hiện của từ khóa (so sánh chuỗi không dấu để tối ưu)
-        const index = contentNoTone.indexOf(cleanSearchNoTone, startIndex);
-        if (index === -1) break;
-
-        matchCount++;
-        matchIndices.push(index);
-        startIndex = index + cleanSearchNoTone.length;
+    while ((match = regex.exec(contentNormalized)) !== null) {
+        matches.push(match.index);
+        // Tránh vòng lặp vô tận nếu regex khớp chuỗi rỗng
+        if (regex.lastIndex === match.index) regex.lastIndex++;
     }
 
-    // Trả về số lượng kết quả tìm được
     return {
-        count: matchCount,
-        indices: matchIndices
+        count: matches.length,
+        indices: matches
     };
 }
 
-// --- Ví dụ tích hợp vào sự kiện ô tìm kiếm (Input Event) ---
-const searchInput = document.querySelector('#search-input'); // Thay ID tương ứng với UI của bạn
-const contentContainer = document.querySelector('#reader-content'); // Container chứa văn bản sách
+// --- TÍCH HỢP VÀO XỬ LÝ SỰ KIỆN (EVENT LISTENER) ---
 
-searchInput.addEventListener('input', (e) => {
-    const keyword = e.target.value;
-    const result = searchAndHighlight(keyword, contentContainer);
+const searchInput = document.querySelector('#search-input'); // Ô tìm kiếm
+const contentContainer = document.querySelector('#reader-content'); // Container chứa sách
+const counterDisplay = document.querySelector('#result-counter'); // Ô hiển thị 0/0
+
+// Cache lại nội dung text của sách để không phải đọc lại DOM nhiều lần gây lag
+let cachedContentText = ""; 
+if (contentContainer) {
+    cachedContentText = contentContainer.innerText || contentContainer.textContent;
+}
+
+// Hàm thực thi tìm kiếm đã bọc Debounce
+const handleSearch = debounce((event) => {
+    const keyword = event.target.value;
     
-    // Cập nhật UI hiển thị số kết quả (ví dụ: 3/5 hoặc 0/0)
-    const resultCounter = document.querySelector('#result-counter');
-    if (resultCounter) {
-        resultCounter.textContent = `${result.count > 0 ? 1 : 0}/${result.count}`;
+    // Nếu từ khóa quá ngắn (< 2 ký tự), bỏ qua để đỡ tốn tài nguyên
+    if (keyword.trim().length < 2) {
+        if (counterDisplay) counterDisplay.textContent = "0/0";
+        return;
     }
-});
+
+    // Thực hiện tìm kiếm siêu tốc
+    const result = FastSearch(keyword, cachedContentText);
+
+    // Cập nhật giao diện đếm số kết quả
+    if (counterDisplay) {
+        counterDisplay.textContent = result.count > 0 ? `1/${result.count}` : "0/0";
+    }
+
+    // TODO: Bổ sung logic scroll tới vị trí match đầu tiên nếu cần
+}, 300); // Trễ 300ms sau khi ngừng gõ mới chạy
+
+// Gán sự kiện input
+searchInput.addEventListener('input', handleSearch);
