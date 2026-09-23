@@ -3,89 +3,103 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Search Engine V27.1</title>
+  <title>Smart Search Engine - Version 27.1</title>
   <style>
-    /* 1. Giao diện cơ bản */
+    /* 1. Giao diện tổng thể */
     body {
-      font-family: Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       line-height: 1.6;
       margin: 0;
       padding: 20px;
-      background-color: #f4f6f8;
-      color: #333;
+      background-color: #f0f2f5;
+      color: #1c1e21;
     }
 
     .container {
-      max-width: 800px;
+      max-width: 900px;
       margin: 0 auto;
-      background: #fff;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
-    /* 2. Thanh công cụ tìm kiếm cố định phía trên */
+    /* 2. Thanh tìm kiếm cố định (Sticky Header) */
     .search-box {
       position: sticky;
-      top: 10px;
+      top: 15px;
       background: #ffffff;
-      padding: 15px;
+      padding: 12px 16px;
       border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
       display: flex;
       gap: 10px;
       align-items: center;
-      margin-bottom: 20px;
-      z-index: 1000;
+      margin-bottom: 25px;
+      z-index: 9999;
+      border: 1px solid #e4e6eb;
     }
 
     .search-box input {
       flex: 1;
-      padding: 10px 12px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+      padding: 10px 14px;
+      border: 1px solid #ccd0d5;
+      border-radius: 6px;
       font-size: 15px;
       outline: none;
+      transition: border-color 0.2s;
     }
 
     .search-box input:focus {
-      border-color: #2196F3;
+      border-color: #1877f2;
     }
 
     .search-box button {
-      padding: 10px 15px;
+      padding: 9px 15px;
       border: none;
-      background-color: #2196F3;
+      background-color: #1877f2;
       color: white;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
-      font-weight: bold;
-      transition: background 0.2s;
+      font-weight: 600;
+      font-size: 14px;
+      transition: background-color 0.2s;
     }
 
     .search-box button:hover {
-      background-color: #1e88e5;
+      background-color: #166fe5;
     }
 
     .search-count {
-      font-weight: bold;
-      color: #666;
-      min-width: 45px;
+      font-weight: 600;
+      color: #65676b;
+      min-width: 50px;
       text-align: center;
+      font-size: 14px;
     }
 
     /* 3. Style Highlight tìm kiếm */
     .search-highlight {
-      background-color: #ffeb3b; /* Vàng nhạt cho tất cả kết quả */
+      background-color: #ffeb3b; /* Màu vàng nhạt cho tất cả kết quả khớp */
       color: #000;
       border-radius: 2px;
       padding: 0 2px;
+      transition: background-color 0.2s;
     }
 
     .search-highlight.active-highlight {
-      background-color: #ff9800; /* Cam nổi bật cho kết quả đang chọn */
+      background-color: #ff9800; /* Màu cam nổi bật cho kết quả đang chọn */
       color: #fff;
       font-weight: bold;
+      outline: 2px solid #e65100;
+    }
+
+    /* Demo content styling */
+    .content-area {
+      background: #fafafa;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #eee;
     }
   </style>
 </head>
@@ -97,43 +111,52 @@
       <input 
         type="text" 
         id="search-input" 
-        placeholder="Nhập từ khóa tìm kiếm (ví dụ: tiếng việt, smart, code)..." 
+        placeholder="Nhập từ khóa (Ví dụ: smart search, tieng viet, highlight)..." 
         oninput="SmartSearch.search(this.value)"
+        onkeydown="SmartSearch.handleKeyDown(event)"
       />
       <span class="search-count" id="search-count">0/0</span>
-      <button onclick="SmartSearch.prev()">&lt;</button>
-      <button onclick="SmartSearch.next()">&gt;</button>
+      <button onclick="SmartSearch.prev()" title="Kết quả trước (Shift+Enter)">&lt;</button>
+      <button onclick="SmartSearch.next()" title="Kết quả tiếp (Enter)">&gt;</button>
+      <button onclick="SmartSearch.clear()" style="background-color: #e4e6eb; color: #050505;">Xóa</button>
     </div>
 
-    <!-- Khu vực nội dung cần tìm kiếm (có ID = content-area) -->
-    <div id="content-area">
-      <h2>Giới Thiệu Smart Search Engine V27.1</h2>
+    <!-- Khu vực nội dung tìm kiếm (ID: content-area) -->
+    <div id="content-area" class="content-area">
+      <h1>SMART SEARCH ENGINE - VERSION 27.1</h1>
       <p>
-        Đây là công cụ tìm kiếm thông minh hỗ trợ <strong>tiếng Việt không dấu</strong>, không phân biệt chữ hoa chữ thường, tự động cuộn trang (auto-scroll) và highlight thời gian thực.
+        Hệ thống tìm kiếm thông minh hỗ trợ <strong>Accent-insensitive</strong> (tìm kiếm tiếng Việt không phân biệt dấu), 
+        <strong>Case-insensitive</strong> (không phân biệt chữ hoa chữ thường), tự động cuộn màn hình (auto-scroll) 
+        và highlight kết quả thời gian thực (real-time highlight).
       </p>
-      
-      <h3>Tính năng nổi bật:</h3>
+
+      <h2>Các tính năng chính:</h2>
       <ul>
-        <li>Tìm kiếm chuẩn xác dù người dùng gõ có dấu hay không dấu (ví dụ: <i>tieng viet</i> tìm được <i>tiếng việt</i>).</li>
-        <li>Tự động xóa các highlight cũ khi thay đổi từ khóa.</li>
-        <li>Hỗ trợ chuyển đổi nhanh giữa các vị trí kết quả bằng nút Next / Prev.</li>
-        <li>Xử lý chuẩn xác ký tự Unicode bằng thuật toán Character Mapping mới nhất.</li>
+        <li><strong>Tìm kiếm không dấu:</strong> Gõ "tieng viet" sẽ tự động khớp và highlight từ "tiếng việt".</li>
+        <li><strong>Auto-scroll mượt mà:</strong> Khi bấm Next / Prev hoặc dùng phím Enter, màn hình tự động cuộn tới đúng vị trí từ khóa ở trung tâm.</li>
+        <li><strong>Phím tắt tiện lợi:</strong> Nhấn <code>Enter</code> để chuyển sang kết quả tiếp theo, nhấn <code>Shift + Enter</code> để quay lại kết quả trước đó.</li>
+        <li><strong>Chuẩn hóa Unicode (Character Mapping):</strong> Khắc phục hoàn toàn lỗi lệch vị trí highlight đối với các từ tiếng Việt phức tạp chứa nhiều dấu ghép.</li>
       </ul>
 
+      <h2>Đoạn văn bản thử nghiệm:</h2>
       <p>
-        Đoạn văn bản thử nghiệm: Tiếng Việt là ngôn ngữ chính thức tại Việt Nam. Công cụ SmartSearch giúp bạn dễ dàng tìm kiếm bất kỳ đoạn text nào trong vùng nội dung này một cách mượt mà nhất.
+        Cộng hòa Xã hội Chủ nghĩa Việt Nam. Độc lập - Tự do - Hạnh phúc. 
+        Mã nguồn SmartSearch V27.1 này giúp tối ưu hóa trải nghiệm tìm kiếm bài viết, tài liệu hoặc hợp đồng ngay trên trình duyệt web của bạn.
+      </p>
+      <p>
+        Bạn có thể thử gõ các từ như: <em>"cong hoa"</em>, <em>"trai nghiem"</em>, <em>"smart"</em>, hoặc <em>"chuc nang"</em> để kiểm tra tốc độ phản hồi và độ chính xác của hệ thống.
       </p>
     </div>
   </div>
 
-  <!-- Javascript SmartSearch Engine -->
+  <!-- SCRIPT SMART SEARCH ENGINE -->
   <script>
     const SmartSearch = {
       version: "V27.1",
       currentIndex: -1,
       matches: [],
 
-      // Hàm loại bỏ dấu tiếng Việt và chuyển thành chữ thường
+      // 1. Hàm loại bỏ dấu tiếng Việt và đưa về chữ thường
       removeAccents(str) {
         if (!str) return "";
         return str
@@ -144,7 +167,7 @@
           .toLowerCase();
       },
 
-      // Tạo mảng bản đồ chỉ số từ chuỗi đã bỏ dấu sang chuỗi gốc (Sửa lỗi lệch vị trí)
+      // 2. Tạo mảng bản đồ chỉ số để map vị trí chuỗi không dấu về chuỗi gốc
       createCharMap(originalStr) {
         const normalizedChars = [];
         const mapToOriginal = [];
@@ -164,14 +187,14 @@
         };
       },
 
-      // Xóa tất cả highlight cũ
+      // 3. Xóa tất cả các thẻ highlight cũ và khôi phục văn bản ban đầu
       clearHighlights() {
         const highlights = document.querySelectorAll(".search-highlight");
         highlights.forEach((el) => {
           const parent = el.parentNode;
           if (parent) {
             parent.replaceChild(document.createTextNode(el.textContent), el);
-            parent.normalize(); // Gộp các text node liền kề lại
+            parent.normalize(); // Gộp các text node lại tránh đứt đoạn
           }
         });
         this.matches = [];
@@ -179,7 +202,14 @@
         this.updateUI();
       },
 
-      // Thực hiện tìm kiếm và highlight trong container
+      // 4. Hàm xóa nhanh nội dung tìm kiếm từ nút "Xóa"
+      clear() {
+        const input = document.getElementById("search-input");
+        if (input) input.value = "";
+        this.clearHighlights();
+      },
+
+      // 5. Thực hiện tìm kiếm và highlight trong container
       search(keyword, containerId = "content-area") {
         this.clearHighlights();
 
@@ -192,6 +222,7 @@
         const normalizedKeyword = this.removeAccents(trimmed);
         if (!normalizedKeyword) return;
 
+        // Duyệt qua tất cả các Text Node trong container
         const walker = document.createTreeWalker(
           container,
           NodeFilter.SHOW_TEXT,
@@ -203,6 +234,7 @@
         let node;
         while ((node = walker.nextNode())) {
           const parentTag = node.parentNode.tagName.toLowerCase();
+          // Bỏ qua các thẻ hệ thống hoặc thẻ nhập liệu
           if (["script", "style", "input", "textarea", "select", "option"].includes(parentTag)) continue;
 
           const { normText } = this.createCharMap(node.nodeValue);
@@ -211,11 +243,12 @@
           }
         }
 
-        // Highlight từng text node tìm được
+        // Tiến hành tạo thẻ highlight cho từng Text Node
         nodesToProcess.forEach((textNode) => {
           this.highlightNode(textNode, trimmed);
         });
 
+        // Lấy danh sách tất cả các phần tử đã highlight
         this.matches = Array.from(document.querySelectorAll(".search-highlight"));
         if (this.matches.length > 0) {
           this.currentIndex = 0;
@@ -224,7 +257,7 @@
         this.updateUI();
       },
 
-      // Highlight các đoạn khớp trong textNode sử dụng Character Mapping
+      // 6. Highlight các đoạn khớp trong textNode sử dụng Character Mapping
       highlightNode(node, keyword) {
         const parent = node.parentNode;
         const text = node.nodeValue;
@@ -236,15 +269,18 @@
         let matchNormIndex = normText.indexOf(normKeyword, 0);
 
         while (matchNormIndex !== -1) {
+          // Lấy index gốc chuẩn xác dựa vào bản đồ mapToOriginal
           const origStartIndex = mapToOriginal[matchNormIndex];
           const origEndIndex = mapToOriginal[matchNormIndex + normKeyword.length - 1] + 1;
 
+          // Thêm phần văn bản trước từ khóa
           if (origStartIndex > lastOriginalIndex) {
             fragment.appendChild(
               document.createTextNode(text.substring(lastOriginalIndex, origStartIndex))
             );
           }
 
+          // Tạo thẻ span highlight cho từ khóa
           const matchText = text.substring(origStartIndex, origEndIndex);
           const span = document.createElement("span");
           span.className = "search-highlight";
@@ -256,6 +292,7 @@
           matchNormIndex = normText.indexOf(normKeyword, nextSearchNormIndex);
         }
 
+        // Thêm phần văn bản còn lại sau từ khóa
         if (lastOriginalIndex < text.length) {
           fragment.appendChild(document.createTextNode(text.substring(lastOriginalIndex)));
         }
@@ -263,13 +300,14 @@
         parent.replaceChild(fragment, node);
       },
 
-      // Focus và cuộn tới vị trí kết quả đang chọn
+      // 7. Active và tự động cuộn (Auto-scroll) tới vị trí kết quả đang chọn
       focusMatch(index) {
         if (this.matches.length === 0 || index < 0 || index >= this.matches.length) return;
 
         this.matches.forEach((el, i) => {
           if (i === index) {
             el.classList.add("active-highlight");
+            // Cuộn mượt tới vị trí chính giữa màn hình
             el.scrollIntoView({ behavior: "smooth", block: "center" });
           } else {
             el.classList.remove("active-highlight");
@@ -277,7 +315,7 @@
         });
       },
 
-      // Chuyển kết quả tiếp theo
+      // 8. Chuyển sang kết quả tiếp theo
       next() {
         if (this.matches.length === 0) return;
         this.currentIndex = (this.currentIndex + 1) % this.matches.length;
@@ -285,7 +323,7 @@
         this.updateUI();
       },
 
-      // Quay lại kết quả trước
+      // 9. Quay lại kết quả phía trước
       prev() {
         if (this.matches.length === 0) return;
         this.currentIndex =
@@ -294,7 +332,19 @@
         this.updateUI();
       },
 
-      // Cập nhật số đếm kết quả trên UI (ví dụ: 1/5)
+      // 10. Bắt sự kiện bàn phím Enter / Shift+Enter
+      handleKeyDown(event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          if (event.shiftKey) {
+            this.prev();
+          } else {
+            this.next();
+          }
+        }
+      },
+
+      // 11. Cập nhật số lượng kết quả hiển thị trên UI (Ví dụ: 1/5)
       updateUI() {
         const countEl = document.getElementById("search-count");
         if (!countEl) return;
