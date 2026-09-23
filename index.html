@@ -1,159 +1,311 @@
-// ==========================================
-// SMART SEARCH ENGINE - VERSION 27.0
-// Features: Accent-insensitive, case-insensitive, auto-scroll, real-time highlight
-// ==========================================
-
-const SmartSearch = {
-  version: "V27.0",
-  currentIndex: -1,
-  matches: [],
-
-  // Hàm loại bỏ dấu tiếng Việt
-  removeAccents(str) {
-    if (!str) return "";
-    return str
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/đ/g, "d")
-      .replace(/Đ/g, "D")
-      .toLowerCase();
-  },
-
-  // Xóa tất cả highlight cũ
-  clearHighlights() {
-    const highlights = document.querySelectorAll(".search-highlight");
-    highlights.forEach((el) => {
-      const parent = el.parentNode;
-      parent.replaceChild(document.createTextNode(el.textContent), el);
-      parent.normalize(); // Gộp lại các text node bị chia nhỏ
-    });
-    this.matches = [];
-    this.currentIndex = -1;
-    this.updateUI();
-  },
-
-  // Thực hiện tìm kiếm và highlight trong container
-  search(keyword, containerId = "content-area") {
-    this.clearHighlights();
-
-    const trimmed = keyword.trim();
-    if (!trimmed) return;
-
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    const normalizedKeyword = this.removeAccents(trimmed);
-    const walker = document.createTreeWalker(
-      container,
-      NodeFilter.SHOW_TEXT,
-      null,
-      false
-    );
-
-    const nodesToProcess = [];
-    let node;
-    while ((node = walker.nextNode())) {
-      // Bỏ qua các thẻ script, style hoặc các thẻ chứa UI tìm kiếm
-      const parentTag = node.parentNode.tagName.toLowerCase();
-      if (["script", "style", "input", "textarea"].includes(parentTag)) continue;
-
-      const normalizedText = this.removeAccents(node.nodeValue);
-      if (normalizedText.includes(normalizedKeyword)) {
-        nodesToProcess.push(node);
-      }
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Search Engine V27.1</title>
+  <style>
+    /* 1. Giao diện cơ bản */
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f6f8;
+      color: #333;
     }
 
-    // Tiến hành highlight từng text node
-    nodesToProcess.forEach((textNode) => {
-      this.highlightNode(textNode, trimmed);
-    });
-
-    this.matches = Array.from(document.querySelectorAll(".search-highlight"));
-    if (this.matches.length > 0) {
-      this.currentIndex = 0;
-      this.focusMatch(this.currentIndex);
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     }
-    this.updateUI();
-  },
 
-  // Highlight các đoạn khớp trong textNode
-  highlightNode(node, keyword) {
-    const parent = node.parentNode;
-    const text = node.nodeValue;
-    const normText = this.removeAccents(text);
-    const normKeyword = this.removeAccents(keyword);
+    /* 2. Thanh công cụ tìm kiếm cố định phía trên */
+    .search-box {
+      position: sticky;
+      top: 10px;
+      background: #ffffff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 20px;
+      z-index: 1000;
+    }
 
-    const fragment = document.createDocumentFragment();
-    let lastIndex = 0;
-    let matchIndex = normText.indexOf(normKeyword, lastIndex);
+    .search-box input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 15px;
+      outline: none;
+    }
 
-    while (matchIndex !== -1) {
-      // Thêm phần văn bản trước từ khóa
-      if (matchIndex > lastIndex) {
-        fragment.appendChild(
-          document.createTextNode(text.substring(lastIndex, matchIndex))
+    .search-box input:focus {
+      border-color: #2196F3;
+    }
+
+    .search-box button {
+      padding: 10px 15px;
+      border: none;
+      background-color: #2196F3;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+
+    .search-box button:hover {
+      background-color: #1e88e5;
+    }
+
+    .search-count {
+      font-weight: bold;
+      color: #666;
+      min-width: 45px;
+      text-align: center;
+    }
+
+    /* 3. Style Highlight tìm kiếm */
+    .search-highlight {
+      background-color: #ffeb3b; /* Vàng nhạt cho tất cả kết quả */
+      color: #000;
+      border-radius: 2px;
+      padding: 0 2px;
+    }
+
+    .search-highlight.active-highlight {
+      background-color: #ff9800; /* Cam nổi bật cho kết quả đang chọn */
+      color: #fff;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Thanh công cụ tìm kiếm -->
+    <div class="search-box">
+      <input 
+        type="text" 
+        id="search-input" 
+        placeholder="Nhập từ khóa tìm kiếm (ví dụ: tiếng việt, smart, code)..." 
+        oninput="SmartSearch.search(this.value)"
+      />
+      <span class="search-count" id="search-count">0/0</span>
+      <button onclick="SmartSearch.prev()">&lt;</button>
+      <button onclick="SmartSearch.next()">&gt;</button>
+    </div>
+
+    <!-- Khu vực nội dung cần tìm kiếm (có ID = content-area) -->
+    <div id="content-area">
+      <h2>Giới Thiệu Smart Search Engine V27.1</h2>
+      <p>
+        Đây là công cụ tìm kiếm thông minh hỗ trợ <strong>tiếng Việt không dấu</strong>, không phân biệt chữ hoa chữ thường, tự động cuộn trang (auto-scroll) và highlight thời gian thực.
+      </p>
+      
+      <h3>Tính năng nổi bật:</h3>
+      <ul>
+        <li>Tìm kiếm chuẩn xác dù người dùng gõ có dấu hay không dấu (ví dụ: <i>tieng viet</i> tìm được <i>tiếng việt</i>).</li>
+        <li>Tự động xóa các highlight cũ khi thay đổi từ khóa.</li>
+        <li>Hỗ trợ chuyển đổi nhanh giữa các vị trí kết quả bằng nút Next / Prev.</li>
+        <li>Xử lý chuẩn xác ký tự Unicode bằng thuật toán Character Mapping mới nhất.</li>
+      </ul>
+
+      <p>
+        Đoạn văn bản thử nghiệm: Tiếng Việt là ngôn ngữ chính thức tại Việt Nam. Công cụ SmartSearch giúp bạn dễ dàng tìm kiếm bất kỳ đoạn text nào trong vùng nội dung này một cách mượt mà nhất.
+      </p>
+    </div>
+  </div>
+
+  <!-- Javascript SmartSearch Engine -->
+  <script>
+    const SmartSearch = {
+      version: "V27.1",
+      currentIndex: -1,
+      matches: [],
+
+      // Hàm loại bỏ dấu tiếng Việt và chuyển thành chữ thường
+      removeAccents(str) {
+        if (!str) return "";
+        return str
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/đ/g, "d")
+          .replace(/Đ/g, "D")
+          .toLowerCase();
+      },
+
+      // Tạo mảng bản đồ chỉ số từ chuỗi đã bỏ dấu sang chuỗi gốc (Sửa lỗi lệch vị trí)
+      createCharMap(originalStr) {
+        const normalizedChars = [];
+        const mapToOriginal = [];
+
+        for (let i = 0; i < originalStr.length; i++) {
+          const char = originalStr[i];
+          const normChar = this.removeAccents(char);
+          for (let j = 0; j < normChar.length; j++) {
+            normalizedChars.push(normChar[j]);
+            mapToOriginal.push(i);
+          }
+        }
+
+        return {
+          normText: normalizedChars.join(""),
+          mapToOriginal
+        };
+      },
+
+      // Xóa tất cả highlight cũ
+      clearHighlights() {
+        const highlights = document.querySelectorAll(".search-highlight");
+        highlights.forEach((el) => {
+          const parent = el.parentNode;
+          if (parent) {
+            parent.replaceChild(document.createTextNode(el.textContent), el);
+            parent.normalize(); // Gộp các text node liền kề lại
+          }
+        });
+        this.matches = [];
+        this.currentIndex = -1;
+        this.updateUI();
+      },
+
+      // Thực hiện tìm kiếm và highlight trong container
+      search(keyword, containerId = "content-area") {
+        this.clearHighlights();
+
+        const trimmed = keyword.trim();
+        if (!trimmed) return;
+
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const normalizedKeyword = this.removeAccents(trimmed);
+        if (!normalizedKeyword) return;
+
+        const walker = document.createTreeWalker(
+          container,
+          NodeFilter.SHOW_TEXT,
+          null,
+          false
         );
+
+        const nodesToProcess = [];
+        let node;
+        while ((node = walker.nextNode())) {
+          const parentTag = node.parentNode.tagName.toLowerCase();
+          if (["script", "style", "input", "textarea", "select", "option"].includes(parentTag)) continue;
+
+          const { normText } = this.createCharMap(node.nodeValue);
+          if (normText.includes(normalizedKeyword)) {
+            nodesToProcess.push(node);
+          }
+        }
+
+        // Highlight từng text node tìm được
+        nodesToProcess.forEach((textNode) => {
+          this.highlightNode(textNode, trimmed);
+        });
+
+        this.matches = Array.from(document.querySelectorAll(".search-highlight"));
+        if (this.matches.length > 0) {
+          this.currentIndex = 0;
+          this.focusMatch(this.currentIndex);
+        }
+        this.updateUI();
+      },
+
+      // Highlight các đoạn khớp trong textNode sử dụng Character Mapping
+      highlightNode(node, keyword) {
+        const parent = node.parentNode;
+        const text = node.nodeValue;
+        const normKeyword = this.removeAccents(keyword);
+        const { normText, mapToOriginal } = this.createCharMap(text);
+
+        const fragment = document.createDocumentFragment();
+        let lastOriginalIndex = 0;
+        let matchNormIndex = normText.indexOf(normKeyword, 0);
+
+        while (matchNormIndex !== -1) {
+          const origStartIndex = mapToOriginal[matchNormIndex];
+          const origEndIndex = mapToOriginal[matchNormIndex + normKeyword.length - 1] + 1;
+
+          if (origStartIndex > lastOriginalIndex) {
+            fragment.appendChild(
+              document.createTextNode(text.substring(lastOriginalIndex, origStartIndex))
+            );
+          }
+
+          const matchText = text.substring(origStartIndex, origEndIndex);
+          const span = document.createElement("span");
+          span.className = "search-highlight";
+          span.textContent = matchText;
+          fragment.appendChild(span);
+
+          lastOriginalIndex = origEndIndex;
+          const nextSearchNormIndex = matchNormIndex + normKeyword.length;
+          matchNormIndex = normText.indexOf(normKeyword, nextSearchNormIndex);
+        }
+
+        if (lastOriginalIndex < text.length) {
+          fragment.appendChild(document.createTextNode(text.substring(lastOriginalIndex)));
+        }
+
+        parent.replaceChild(fragment, node);
+      },
+
+      // Focus và cuộn tới vị trí kết quả đang chọn
+      focusMatch(index) {
+        if (this.matches.length === 0 || index < 0 || index >= this.matches.length) return;
+
+        this.matches.forEach((el, i) => {
+          if (i === index) {
+            el.classList.add("active-highlight");
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+          } else {
+            el.classList.remove("active-highlight");
+          }
+        });
+      },
+
+      // Chuyển kết quả tiếp theo
+      next() {
+        if (this.matches.length === 0) return;
+        this.currentIndex = (this.currentIndex + 1) % this.matches.length;
+        this.focusMatch(this.currentIndex);
+        this.updateUI();
+      },
+
+      // Quay lại kết quả trước
+      prev() {
+        if (this.matches.length === 0) return;
+        this.currentIndex =
+          (this.currentIndex - 1 + this.matches.length) % this.matches.length;
+        this.focusMatch(this.currentIndex);
+        this.updateUI();
+      },
+
+      // Cập nhật số đếm kết quả trên UI (ví dụ: 1/5)
+      updateUI() {
+        const countEl = document.getElementById("search-count");
+        if (!countEl) return;
+
+        if (this.matches.length === 0) {
+          countEl.textContent = "0/0";
+        } else {
+          countEl.textContent = `${this.currentIndex + 1}/${this.matches.length}`;
+        }
       }
-
-      // Tạo thẻ span highlight cho từ khóa
-      const matchText = text.substring(matchIndex, matchIndex + keyword.length);
-      const span = document.createElement("span");
-      span.className = "search-highlight";
-      span.textContent = matchText;
-      fragment.appendChild(span);
-
-      lastIndex = matchIndex + keyword.length;
-      matchIndex = normText.indexOf(normKeyword, lastIndex);
-    }
-
-    // Thêm phần văn bản còn lại
-    if (lastIndex < text.length) {
-      fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
-    }
-
-    parent.replaceChild(fragment, node);
-  },
-
-  // Focus và cuộn tới vị trí kết quả đang chọn
-  focusMatch(index) {
-    if (this.matches.length === 0 || index < 0 || index >= this.matches.length) return;
-
-    this.matches.forEach((el, i) => {
-      if (i === index) {
-        el.classList.add("active-highlight");
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-      } else {
-        el.classList.remove("active-highlight");
-      }
-    });
-  },
-
-  // Chuyển kết quả tiếp theo
-  next() {
-    if (this.matches.length === 0) return;
-    this.currentIndex = (this.currentIndex + 1) % this.matches.length;
-    this.focusMatch(this.currentIndex);
-    this.updateUI();
-  },
-
-  // Quay lại kết quả trước
-  prev() {
-    if (this.matches.length === 0) return;
-    this.currentIndex =
-      (this.currentIndex - 1 + this.matches.length) % this.matches.length;
-    this.focusMatch(this.currentIndex);
-    this.updateUI();
-  },
-
-  // Cập nhật đếm kết quả trên UI (ví dụ: 1/5)
-  updateUI() {
-    const countEl = document.getElementById("search-count");
-    if (!countEl) return;
-
-    if (this.matches.length === 0) {
-      countEl.textContent = "0/0";
-    } else {
-      countEl.textContent = `${this.currentIndex + 1}/${this.matches.length}`;
-    }
-  }
-};
+    };
+  </script>
+</body>
+</html>
