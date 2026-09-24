@@ -188,13 +188,11 @@
         let book = null;
         let rendition = null;
         let currentFileName = "";
-        let bookArrayBuffer = null;
         let currentFontSize = "16px";
         let isDarkMode = false;
 
         const STORAGE_PREFIX_CFI = "mod_epub_cfi_";
         const STORAGE_PREFIX_FILE = "mod_epub_last_file";
-        const STORAGE_PREFIX_DATA = "mod_epub_data_";
 
         const fileInput = document.getElementById('epub-file');
         const prevBtn = document.getElementById('prev');
@@ -214,7 +212,7 @@
         const appHeader = document.getElementById('app-header');
         const viewerContainer = document.getElementById('viewer-container');
 
-        // Logic Kéo thả Popup hỗ trợ cả chuột (Desktop) và chạm vuốt (Mobile/iPhone)
+        // Logic Kéo thả Popup hỗ trợ cảm ứng iPhone
         let isDragging = false;
         let startX, startY, initialLeft, initialTop;
 
@@ -239,34 +237,20 @@
             const dx = clientX - startX;
             const dy = clientY - startY;
             
-            let newLeft = initialLeft + dx;
-            let newTop = initialTop + dy;
-            
-            popup.style.left = `${newLeft}px`;
-            popup.style.top = `${newTop}px`;
+            popup.style.left = `${initialLeft + dx}px`;
+            popup.style.top = `${initialTop + dy}px`;
         }
 
-        popup.addEventListener('mousedown', (e) => {
-            startDrag(e.clientX, e.clientY);
-            e.stopPropagation();
-        });
+        popup.addEventListener('mousedown', (e) => { startDrag(e.clientX, e.clientY); e.stopPropagation(); });
         document.addEventListener('mousemove', (e) => onDrag(e.clientX, e.clientY));
         document.addEventListener('mouseup', () => { isDragging = false; });
 
-        // Hỗ trợ cảm ứng vuốt kéo popup trên màn hình iPhone
         popup.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 1) {
-                startDrag(e.touches[0].clientX, e.touches[0].clientY);
-                e.stopPropagation();
-            }
+            if (e.touches.length === 1) { startDrag(e.touches[0].clientX, e.touches[0].clientY); e.stopPropagation(); }
         }, { passive: true });
-
         document.addEventListener('touchmove', (e) => {
-            if (isDragging && e.touches.length === 1) {
-                onDrag(e.touches[0].clientX, e.touches[0].clientY);
-            }
+            if (isDragging && e.touches.length === 1) { onDrag(e.touches[0].clientX, e.touches[0].clientY); }
         }, { passive: true });
-
         document.addEventListener('touchend', () => { isDragging = false; });
 
         function toggleHeader() {
@@ -317,25 +301,8 @@
             }
         });
 
-        // Khôi phục sách cũ bằng FileReader an toàn cho iOS
-        window.addEventListener('DOMContentLoaded', async () => {
-            const savedFileName = localStorage.getItem(STORAGE_PREFIX_FILE);
-            if (savedFileName) {
-                const savedDataHex = localStorage.getItem(STORAGE_PREFIX_DATA + savedFileName);
-                if (savedDataHex) {
-                    try {
-                        currentFileName = savedFileName;
-                        currentBookNameSpan.textContent = savedFileName;
-                        progressSpan.textContent = "...";
-                        bookArrayBuffer = hexToArrayBuffer(savedDataHex);
-                        await sanitizeAndLoadBook(bookArrayBuffer, savedFileName);
-                    } catch (err) { console.error("Khôi phục sách lỗi:", err); }
-                }
-            }
-        });
-
-        // Đọc file tối ưu hóa riêng cho Safari iOS thông qua FileReader
-        fileInput.addEventListener('change', function(e) {
+        // Xử lý tệp bằng Blob URL trực tiếp qua ePub.js để vượt qua lỗi chặn bộ nhớ trên Safari iOS
+        fileInput.addEventListener('change', async function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
@@ -343,51 +310,23 @@
             currentBookNameSpan.textContent = currentFileName;
             progressSpan.textContent = "...";
 
-            const reader = new FileReader();
-            reader.onload = async function(event) {
-                try {
-                    const arrayBuffer = event.target.result;
-                    bookArrayBuffer = arrayBuffer;
-
-                    // Lưu vào localStorage (có catch phòng trường hợp file quá lớn vượt quá dung lượng lưu trữ của trình duyệt)
-                    try {
-                        localStorage.setItem(STORAGE_PREFIX_FILE, currentFileName);
-                        localStorage.setItem(STORAGE_PREFIX_DATA + currentFileName, arrayBufferToHex(arrayBuffer));
-                    } catch (storageErr) {
-                        console.warn("File quá lớn để lưu tự động vào bộ nhớ tạm trình duyệt, nhưng vẫn đọc tốt trong phiên này.");
-                    }
-
-                    await sanitizeAndLoadBook(arrayBuffer, currentFileName);
-                } catch (err) {
-                    console.error(err);
-                    alert("Không thể giải mã file EPUB này trên Safari.");
-                }
-            };
-            reader.onerror = function() {
-                alert("Lỗi đọc file trên thiết bị di động.");
-            };
-            reader.readAsArrayBuffer(file);
+            try {
+                // Tạo Blob URL sạch - Phương pháp tối ưu nhất cho Safari iOS
+                const bookUrl = URL.createObjectURL(file);
+                localStorage.setItem(STORAGE_PREFIX_FILE, currentFileName);
+                loadBook(bookUrl, currentFileName);
+            } catch (err) {
+                console.error(err);
+                alert("Không thể khởi tạo file EPUB trên thiết bị này.");
+            }
         });
 
-        async function sanitizeAndLoadBook(arrayBuffer, fileName) {
-            const zip = new JSZip();
-            const zipContent = await zip.loadAsync(arrayBuffer);
-
-            for (let filename of Object.keys(zipContent.files)) {
-                if (filename.match(/\.(html|xhtml|htm|xml)$/i)) {
-                    let text = await zipContent.files[filename].async("string");
-                    text = text.replace(/&(?![a-zA-Z0-9#]+;)/g, '&amp;');
-                    zipContent.file(filename, text);
-                }
-            }
-            loadBook(await zipContent.generateAsync({ type: "arraybuffer" }), fileName);
-        }
-
-        function loadBook(bookData, fileName) {
+        function loadBook(bookSource, fileName) {
             if (book) book.destroy();
             document.getElementById('viewer').innerHTML = '';
 
-            book = ePub(bookData);
+            // Khởi tạo trực tiếp từ nguồn chuẩn của ePub.js
+            book = ePub(bookSource);
             rendition = book.renderTo("viewer", { width: "100%", height: "100%", spread: "auto" });
 
             rendition.hooks.content.register((contents) => {
@@ -563,15 +502,6 @@
                 }
             }, 350);
         });
-
-        function arrayBufferToHex(buffer) {
-            return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-        function hexToArrayBuffer(hex) {
-            const bytes = new Uint8Array(hex.length / 2);
-            for (let i = 0; i < hex.length; i += 2) bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
-            return bytes.buffer;
-        }
 
         prevBtn.addEventListener('click', () => { if (rendition) rendition.prev(); });
         nextBtn.addEventListener('click', () => { if (rendition) rendition.next(); });
