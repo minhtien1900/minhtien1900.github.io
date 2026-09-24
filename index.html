@@ -143,6 +143,39 @@
         const appHeader = document.getElementById('app-header');
         const viewerContainer = document.getElementById('viewer-container');
 
+        let isDragging = false;
+        let startX, startY, initialLeft, initialTop;
+
+        function startDrag(clientX, clientY) {
+            isDragging = true;
+            startX = clientX;
+            startY = clientY;
+            const rect = popup.getBoundingClientRect();
+            const containerRect = viewerContainer.getBoundingClientRect();
+            initialLeft = rect.left - containerRect.left;
+            initialTop = rect.top - containerRect.top;
+            popup.style.transform = 'none';
+            popup.style.left = `${initialLeft}px`;
+            popup.style.top = `${initialTop}px`;
+        }
+
+        function onDrag(clientX, clientY) {
+            if (!isDragging) return;
+            let newLeft = initialLeft + (clientX - startX);
+            let newTop = initialTop + (clientY - startY);
+            const containerRect = viewerContainer.getBoundingClientRect();
+            if (newLeft < 5) newLeft = 5;
+            if (newLeft > containerRect.width - popup.offsetWidth - 5) newLeft = containerRect.width - popup.offsetWidth - 5;
+            if (newTop < 5) newTop = 5;
+            if (newTop > containerRect.height - popup.offsetHeight - 5) newTop = containerRect.height - popup.offsetHeight - 5;
+            popup.style.left = `${newLeft}px`;
+            popup.style.top = `${newTop}px`;
+        }
+
+        popup.addEventListener('touchstart', (e) => { if (e.touches.length === 1) { startDrag(e.touches[0].clientX, e.touches[0].clientY); e.stopPropagation(); } }, { passive: true });
+        document.addEventListener('touchmove', (e) => { if (isDragging && e.touches.length === 1) { onDrag(e.touches[0].clientX, e.touches[0].clientY); } }, { passive: true });
+        document.addEventListener('touchend', () => { isDragging = false; });
+
         // Xử lý nạp file qua ArrayBuffer trực tiếp cho Safari iOS
         fileInput.addEventListener('change', async function(e) {
             const file = e.target.files[0];
@@ -167,7 +200,6 @@
             document.getElementById('viewer').innerHTML = '';
 
             try {
-                // Khởi tạo ePub bằng mảng ArrayBuffer thuần túy
                 book = ePub(data);
                 rendition = book.renderTo("viewer", { width: "100%", height: "100%", spread: "none" });
 
@@ -251,8 +283,9 @@
         nextBtn.addEventListener('click', () => { if (rendition) rendition.next(); });
         toggleHeaderBtn.addEventListener('click', () => { document.body.classList.toggle('header-hidden'); appHeader.classList.toggle('hidden-header'); setTimeout(() => { if (rendition) rendition.resize(); }, 300); });
         restoreHeaderBtn.addEventListener('click', () => { document.body.classList.toggle('header-hidden'); appHeader.classList.toggle('hidden-header'); setTimeout(() => { if (rendition) rendition.resize(); }, 300); });
-        themeToggleBtn.addEventListener('click', () => { isDarkMode = !isDarkMode; document.documentElement.classList.toggle('dark', isDarkMode); themeIcon.textContent = isDarkMode ? '☀️' : '🌙'; });
+        themeToggleBtn.addEventListener('click', () => { isDarkMode = !isDarkMode; document.documentElement.classList.toggle('dark', isDarkMode); themeIcon.textContent = isDarkMode ? '☀️' : '🌙'; if (rendition) rendition.display(); });
         fontSizeSelect.addEventListener('change', (e) => { currentFontSize = e.target.value; if (rendition) rendition.display(); });
+        closePopupBtn.addEventListener('click', () => { popup.style.display = 'none'; });
     </script>
 </body>
 </html>
