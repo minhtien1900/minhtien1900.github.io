@@ -176,7 +176,6 @@
         document.addEventListener('touchmove', (e) => { if (isDragging && e.touches.length === 1) { onDrag(e.touches[0].clientX, e.touches[0].clientY); } }, { passive: true });
         document.addEventListener('touchend', () => { isDragging = false; });
 
-        // Xử lý nạp file qua ArrayBuffer trực tiếp cho Safari iOS
         fileInput.addEventListener('change', async function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -186,12 +185,28 @@
             progressSpan.textContent = "Đang tải...";
 
             try {
-                const arrayBuffer = await file.arrayBuffer();
-                loadBookData(arrayBuffer, currentFileName);
+                // Xử lý tiền giải nén và làm sạch lỗi XML bằng JSZip trước khi truyền vào ePub.js
+                const zip = new JSZip();
+                const zipContent = await zip.loadAsync(file);
+                
+                // Duyệt qua các tệp xhtml/html để sửa lỗi ký tự & bị kẹt
+                for (let filename of Object.keys(zipContent.files)) {
+                    if (filename.endsWith('.htm') || filename.endsWith('.html') || filename.endsWith('.xhtml') || filename.endsWith('.xml')) {
+                        let text = await zipContent.files[filename].async("text");
+                        // Thay thế các ký tự & không hợp lệ thành &amp; để tránh lỗi XML parser trên iOS
+                        text = text.replace(/&(?![a-zA-Z0-9#]+;)/g, '&amp;');
+                        zip.file(filename, text);
+                    }
+                }
+
+                // Xuất lại file dưới dạng ArrayBuffer sạch
+                const cleanBlob = await zip.generateAsync({ type: "arraybuffer" });
+                loadBookData(cleanBlob, currentFileName);
             } catch (err) {
                 console.error(err);
-                alert("Không thể đọc định dạng file này trên trình duyệt.");
-                progressSpan.textContent = "Lỗi";
+                // Fallback nếu file không nén qua JSZip được
+                const arrayBuffer = await file.arrayBuffer();
+                loadBookData(arrayBuffer, currentFileName);
             }
         });
 
