@@ -31,69 +31,35 @@
         * { box-sizing: border-box; }
         html, body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            margin: 0; 
-            padding: 0; 
-            width: 100%; 
-            height: 100%; 
-            overflow: hidden; 
+            margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; 
             background-color: #f8fafc;
         }
         .dark body { background-color: #0f172a; }
 
-        #app-header {
-            transition: transform 0.3s ease, opacity 0.3s ease;
-        }
+        #app-header { transition: transform 0.3s ease, opacity 0.3s ease; }
         #app-header.hidden-header {
-            transform: translateY(-100%);
-            opacity: 0;
-            pointer-events: none;
-            height: 0;
-            border: none;
-            overflow: hidden;
-            padding: 0;
-            margin: 0;
+            transform: translateY(-100%); opacity: 0; pointer-events: none;
+            height: 0; border: none; overflow: hidden; padding: 0; margin: 0;
         }
 
         #viewer-container {
-            width: 100%;
-            height: calc(100% - 52px);
-            position: relative;
-            overflow: hidden;
+            width: 100%; height: calc(100% - 52px); position: relative; overflow: hidden;
         }
-        body.header-hidden #viewer-container {
-            height: 100%;
-        }
-
+        body.header-hidden #viewer-container { height: 100%; }
         #viewer { width: 100%; height: 100%; }
 
         #word-popup {
-            display: none;
-            position: absolute;
-            z-index: 1200;
-            padding: 12px 14px;
-            width: 88vw;
-            max-width: 300px;
-            border-radius: 12px;
-            box-shadow: 0 15px 25px -5px rgba(0,0,0,0.25);
-            user-select: none;
+            display: none; position: absolute; z-index: 1200; padding: 12px 14px;
+            width: 88vw; max-width: 300px; border-radius: 12px;
+            box-shadow: 0 15px 25px -5px rgba(0,0,0,0.25); user-select: none;
         }
-
         #popup-header-handle { cursor: move; }
 
         #restore-header-btn {
-            display: none;
-            position: fixed;
-            top: 10px;
-            right: 12px;
-            z-index: 1300;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none; position: fixed; top: 10px; right: 12px; z-index: 1300;
+            backdrop-filter: blur(8px); box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
-        body.header-hidden #restore-header-btn {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
+        body.header-hidden #restore-header-btn { display: flex; align-items: center; gap: 4px; }
 
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -107,7 +73,6 @@
         <span>📂</span> <span>Mở menu</span>
     </button>
 
-    <!-- Header tối ưu gọn gàng cho iPhone -->
     <header id="app-header" class="h-[52px] bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border px-2.5 flex items-center justify-between shrink-0 z-20 w-full">
         <div class="flex items-center space-x-2 overflow-hidden">
             <label class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-semibold px-2.5 py-1.5 rounded-lg transition shadow-sm flex items-center space-x-1 shrink-0">
@@ -119,12 +84,10 @@
         </div>
 
         <div class="flex items-center space-x-1.5 shrink-0">
-            <!-- Nút Dark Mode -->
             <button id="theme-toggle-btn" class="p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs transition text-slate-700 dark:text-slate-300">
                 <span id="theme-icon">🌙</span>
             </button>
 
-            <!-- Cỡ chữ -->
             <select id="font-size-select" class="bg-slate-100 dark:bg-slate-800 border-0 text-[11px] px-1 py-1.5 rounded-lg font-medium focus:outline-none text-slate-700 dark:text-slate-300">
                 <option value="14px">14</option>
                 <option value="16px" selected>16</option>
@@ -132,14 +95,12 @@
                 <option value="20px">20</option>
             </select>
 
-            <!-- Điều hướng -->
             <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 text-slate-700 dark:text-slate-300">
                 <button id="prev" class="px-2 py-1 text-[11px] font-bold disabled:opacity-40">◀</button>
                 <span id="progress" class="text-[10px] font-semibold px-1 text-slate-500">0%</span>
                 <button id="next" class="px-2 py-1 text-[11px] font-bold disabled:opacity-40">▶</button>
             </div>
 
-            <!-- Nút ẩn menu -->
             <button id="toggle-header-btn" class="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300" title="Thu gọn">🗕</button>
         </div>
     </header>
@@ -167,9 +128,6 @@
         let currentFontSize = "16px";
         let isDarkMode = false;
 
-        const STORAGE_PREFIX_CFI = "mod_epub_cfi_";
-        const STORAGE_PREFIX_FILE = "mod_epub_last_file";
-
         const fileInput = document.getElementById('epub-file');
         const prevBtn = document.getElementById('prev');
         const nextBtn = document.getElementById('next');
@@ -185,165 +143,116 @@
         const appHeader = document.getElementById('app-header');
         const viewerContainer = document.getElementById('viewer-container');
 
-        let isDragging = false;
-        let startX, startY, initialLeft, initialTop;
-
-        function startDrag(clientX, clientY) {
-            isDragging = true;
-            startX = clientX;
-            startY = clientY;
-            const rect = popup.getBoundingClientRect();
-            const containerRect = viewerContainer.getBoundingClientRect();
-            initialLeft = rect.left - containerRect.left;
-            initialTop = rect.top - containerRect.top;
-            popup.style.transform = 'none';
-            popup.style.left = `${initialLeft}px`;
-            popup.style.top = `${initialTop}px`;
-        }
-
-        function onDrag(clientX, clientY) {
-            if (!isDragging) return;
-            let newLeft = initialLeft + (clientX - startX);
-            let newTop = initialTop + (clientY - startY);
-            const containerRect = viewerContainer.getBoundingClientRect();
-            if (newLeft < 5) newLeft = 5;
-            if (newLeft > containerRect.width - popup.offsetWidth - 5) newLeft = containerRect.width - popup.offsetWidth - 5;
-            if (newTop < 5) newTop = 5;
-            if (newTop > containerRect.height - popup.offsetHeight - 5) newTop = containerRect.height - popup.offsetHeight - 5;
-            popup.style.left = `${newLeft}px`;
-            popup.style.top = `${newTop}px`;
-        }
-
-        popup.addEventListener('touchstart', (e) => { if (e.touches.length === 1) { startDrag(e.touches[0].clientX, e.touches[0].clientY); e.stopPropagation(); } }, { passive: true });
-        document.addEventListener('touchmove', (e) => { if (isDragging && e.touches.length === 1) { onDrag(e.touches[0].clientX, e.touches[0].clientY); } }, { passive: true });
-        document.addEventListener('touchend', () => { isDragging = false; });
-
-        function toggleHeader() {
-            document.body.classList.toggle('header-hidden');
-            appHeader.classList.toggle('hidden-header');
-            setTimeout(() => { if (rendition) rendition.resize(); }, 300);
-        }
-
-        toggleHeaderBtn.addEventListener('click', toggleHeader);
-        restoreHeaderBtn.addEventListener('click', toggleHeader);
-
-        function updateThemeUI() {
-            if (isDarkMode) {
-                document.documentElement.classList.add('dark');
-                themeIcon.textContent = '☀️';
-            } else {
-                document.documentElement.classList.remove('dark');
-                themeIcon.textContent = '🌙';
-            }
-        }
-
-        function applyThemeAndStyles() {
-            if (!rendition) return;
-            updateThemeUI();
-            const currentLocation = rendition.currentLocation();
-            if (currentLocation && currentLocation.start) {
-                rendition.display(currentLocation.start.cfi);
-            }
-        }
-
-        themeToggleBtn.addEventListener('click', () => { isDarkMode = !isDarkMode; applyThemeAndStyles(); });
-        fontSizeSelect.addEventListener('change', (e) => { currentFontSize = e.target.value; applyThemeAndStyles(); });
-        closePopupBtn.addEventListener('click', () => { popup.style.display = 'none'; });
-
+        // Xử lý nạp file qua ArrayBuffer trực tiếp cho Safari iOS
         fileInput.addEventListener('change', async function(e) {
             const file = e.target.files[0];
             if (!file) return;
+
             currentFileName = file.name;
             currentBookNameSpan.textContent = currentFileName;
-            progressSpan.textContent = "...";
+            progressSpan.textContent = "Đang tải...";
+
             try {
-                const bookUrl = URL.createObjectURL(file);
-                localStorage.setItem(STORAGE_PREFIX_FILE, currentFileName);
-                loadBook(bookUrl, currentFileName);
-            } catch (err) { alert("Không thể khởi tạo file EPUB."); }
+                const arrayBuffer = await file.arrayBuffer();
+                loadBookData(arrayBuffer, currentFileName);
+            } catch (err) {
+                console.error(err);
+                alert("Không thể đọc định dạng file này trên trình duyệt.");
+                progressSpan.textContent = "Lỗi";
+            }
         });
 
-        function loadBook(bookSource, fileName) {
+        function loadBookData(data, fileName) {
             if (book) book.destroy();
             document.getElementById('viewer').innerHTML = '';
-            book = ePub(bookSource);
-            rendition = book.renderTo("viewer", { width: "100%", height: "100%", spread: "none" });
 
-            rendition.hooks.content.register((contents) => {
-                const doc = contents.document;
-                let bgColor = isDarkMode ? '#0f172a' : '#ffffff';
-                let textColor = isDarkMode ? '#f1f5f9' : '#1e293b';
-                let viColor = isDarkMode ? '#38bdf8' : '#0284c7';
+            try {
+                // Khởi tạo ePub bằng mảng ArrayBuffer thuần túy
+                book = ePub(data);
+                rendition = book.renderTo("viewer", { width: "100%", height: "100%", spread: "none" });
 
-                const styleEl = doc.createElement('style');
-                styleEl.innerHTML = `
-                    html, body {
-                        background-color: ${bgColor} !important;
-                        color: ${textColor} !important;
-                        font-size: ${currentFontSize} !important;
-                        line-height: 1.6 !important;
-                        padding: 12px 16px !important;
-                        margin: 0 !important;
-                    }
-                    * { background-color: transparent !important; color: ${textColor} !important; max-width: 100% !important; }
-                    p.vietnamese, div.vietnamese, span.vietnamese, .vi { color: ${viColor} !important; }
-                `;
-                doc.head.appendChild(styleEl);
+                rendition.hooks.content.register((contents) => {
+                    const doc = contents.document;
+                    let bgColor = isDarkMode ? '#0f172a' : '#ffffff';
+                    let textColor = isDarkMode ? '#f1f5f9' : '#1e293b';
+                    let viColor = isDarkMode ? '#38bdf8' : '#0284c7';
 
-                doc.addEventListener('click', (event) => {
-                    const spanEl = event.target.closest('span');
-                    if (spanEl) {
-                        const wordText = spanEl.textContent.trim();
-                        const ipa = spanEl.getAttribute('data-ipa') || spanEl.dataset.ipa || '';
-                        const meaning = spanEl.getAttribute('data-trans') || spanEl.getAttribute('data-meaning') || 'Đang cập nhật nghĩa...';
-
-                        if (wordText) {
-                            document.getElementById('popup-word').textContent = wordText;
-                            document.getElementById('popup-ipa').textContent = ipa ? `/${ipa}/` : '';
-                            document.getElementById('popup-meaning').textContent = meaning;
-
-                            const rect = spanEl.getBoundingClientRect();
-                            const iframe = document.querySelector('#viewer iframe');
-                            if (iframe) {
-                                const iframeRect = iframe.getBoundingClientRect();
-                                const containerRect = viewerContainer.getBoundingClientRect();
-                                let posX = (iframeRect.left - containerRect.left) + rect.left + (rect.width / 2);
-                                let posY = (iframeRect.top - containerRect.top) + rect.top;
-
-                                popup.style.display = 'block';
-                                popup.style.transform = 'translate(-50%, -100%)';
-                                if (posY < 80) {
-                                    posY = (iframeRect.top - containerRect.top) + rect.bottom;
-                                    popup.style.transform = 'translate(-50%, 8px)';
-                                }
-                                popup.style.left = `${Math.max(140, Math.min(containerRect.width - 140, posX))}px`;
-                                popup.style.top = `${posY}px`;
-                            }
-                            event.stopPropagation();
+                    const styleEl = doc.createElement('style');
+                    styleEl.innerHTML = `
+                        html, body {
+                            background-color: ${bgColor} !important;
+                            color: ${textColor} !important;
+                            font-size: ${currentFontSize} !important;
+                            line-height: 1.6 !important;
+                            padding: 12px 16px !important;
+                            margin: 0 !important;
                         }
-                    }
+                        * { background-color: transparent !important; color: ${textColor} !important; max-width: 100% !important; }
+                        p.vietnamese, div.vietnamese, span.vietnamese, .vi { color: ${viColor} !important; }
+                    `;
+                    doc.head.appendChild(styleEl);
+
+                    doc.addEventListener('click', (event) => {
+                        const spanEl = event.target.closest('span');
+                        if (spanEl) {
+                            const wordText = spanEl.textContent.trim();
+                            const ipa = spanEl.getAttribute('data-ipa') || spanEl.dataset.ipa || '';
+                            const meaning = spanEl.getAttribute('data-trans') || spanEl.getAttribute('data-meaning') || 'Đang cập nhật nghĩa...';
+
+                            if (wordText) {
+                                document.getElementById('popup-word').textContent = wordText;
+                                document.getElementById('popup-ipa').textContent = ipa ? `/${ipa}/` : '';
+                                document.getElementById('popup-meaning').textContent = meaning;
+
+                                const rect = spanEl.getBoundingClientRect();
+                                const iframe = document.querySelector('#viewer iframe');
+                                if (iframe) {
+                                    const iframeRect = iframe.getBoundingClientRect();
+                                    const containerRect = viewerContainer.getBoundingClientRect();
+                                    let posX = (iframeRect.left - containerRect.left) + rect.left + (rect.width / 2);
+                                    let posY = (iframeRect.top - containerRect.top) + rect.top;
+
+                                    popup.style.display = 'block';
+                                    popup.style.transform = 'translate(-50%, -100%)';
+                                    if (posY < 80) {
+                                        posY = (iframeRect.top - containerRect.top) + rect.bottom;
+                                        popup.style.transform = 'translate(-50%, 8px)';
+                                    }
+                                    popup.style.left = `${Math.max(140, Math.min(containerRect.width - 140, posX))}px`;
+                                    popup.style.top = `${posY}px`;
+                                }
+                                event.stopPropagation();
+                            }
+                        }
+                    });
                 });
-            });
 
-            rendition.on("relocated", (location) => {
-                popup.style.display = 'none';
-                const percent = book.locations.percentageFromCfi(location.start.cfi);
-                if (!isNaN(percent)) progressSpan.textContent = `${Math.round(percent * 100)}%`;
-                if (fileName) {
-                    try { localStorage.setItem(STORAGE_PREFIX_CFI + fileName, location.start.cfi); } catch(e){}
-                }
-            });
+                rendition.on("relocated", (location) => {
+                    popup.style.display = 'none';
+                    const percent = book.locations.percentageFromCfi(location.start.cfi);
+                    if (!isNaN(percent)) progressSpan.textContent = `${Math.round(percent * 100)}%`;
+                });
 
-            const savedCfi = fileName ? localStorage.getItem(STORAGE_PREFIX_CFI + fileName) : null;
-            rendition.display(savedCfi || undefined).then(() => {
-                prevBtn.disabled = false; nextBtn.disabled = false;
-            }).catch(() => { rendition.display(); prevBtn.disabled = false; nextBtn.disabled = false; });
+                rendition.display().then(() => {
+                    prevBtn.disabled = false;
+                    nextBtn.disabled = false;
+                }).catch((e) => {
+                    console.error("Lỗi render sách:", e);
+                });
 
-            book.ready.then(() => book.locations.generate(1024));
+                book.ready.then(() => book.locations.generate(1024));
+            } catch (err) {
+                console.error("Lỗi khởi tạo ePub:", err);
+                alert("File EPUB bị lỗi cấu trúc hoặc không được hỗ trợ.");
+            }
         }
 
         prevBtn.addEventListener('click', () => { if (rendition) rendition.prev(); });
         nextBtn.addEventListener('click', () => { if (rendition) rendition.next(); });
+        toggleHeaderBtn.addEventListener('click', () => { document.body.classList.toggle('header-hidden'); appHeader.classList.toggle('hidden-header'); setTimeout(() => { if (rendition) rendition.resize(); }, 300); });
+        restoreHeaderBtn.addEventListener('click', () => { document.body.classList.toggle('header-hidden'); appHeader.classList.toggle('hidden-header'); setTimeout(() => { if (rendition) rendition.resize(); }, 300); });
+        themeToggleBtn.addEventListener('click', () => { isDarkMode = !isDarkMode; document.documentElement.classList.toggle('dark', isDarkMode); themeIcon.textContent = isDarkMode ? '☀️' : '🌙'; });
+        fontSizeSelect.addEventListener('change', (e) => { currentFontSize = e.target.value; if (rendition) rendition.display(); });
     </script>
 </body>
 </html>
