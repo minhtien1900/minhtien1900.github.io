@@ -2,7 +2,7 @@
 <html lang="vi" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Modern Bilingual E-Reader Pro</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -28,7 +28,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow: hidden; position: fixed; width: 100%; height: 100%; }
 
         #app-header {
             transition: transform 0.3s ease, opacity 0.3s ease;
@@ -46,7 +46,7 @@
 
         #viewer-container {
             width: 100%;
-            height: calc(100vh - 64px);
+            height: calc(100vh - 56px);
             position: relative;
             overflow: hidden;
             transition: height 0.3s ease;
@@ -61,11 +61,13 @@
             display: none;
             position: absolute;
             z-index: 1200;
-            padding: 16px;
-            width: 320px;
+            padding: 12px 16px;
+            width: 88vw;
+            max-width: 320px;
             border-radius: 1rem;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15), 0 10px 10px -5px rgba(0,0,0,0.04);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.08);
             user-select: none;
+            box-sizing: border-box;
         }
 
         #popup-header-handle {
@@ -78,15 +80,15 @@
             top: 50px;
             left: 0;
             width: 100%;
-            max-height: 380px;
+            max-height: 300px;
             overflow-y: auto;
             z-index: 1100;
             padding: 6px;
         }
         .search-item {
-            padding: 10px 14px;
+            padding: 8px 12px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 12px;
             border-radius: 0.5rem;
             transition: background 0.15s;
         }
@@ -94,8 +96,8 @@
         #restore-header-btn {
             display: none;
             position: fixed;
-            top: 12px;
-            right: 16px;
+            top: 10px;
+            right: 12px;
             z-index: 1300;
             backdrop-filter: blur(8px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -103,68 +105,56 @@
         body.header-hidden #restore-header-btn {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
         }
 
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
     </style>
 </head>
 <body class="h-full bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-dark-text flex flex-col transition-colors duration-200">
 
-    <button id="restore-header-btn" class="bg-slate-900/90 dark:bg-slate-100/90 text-white dark:text-slate-900 border border-slate-700/20 px-3.5 py-1.5 rounded-lg text-xs font-semibold">
-        <span>📂</span> <span>Hiện thanh công cụ</span>
+    <button id="restore-header-btn" class="bg-slate-900/90 dark:bg-slate-100/90 text-white dark:text-slate-900 border border-slate-700/20 px-3 py-1.5 rounded-lg text-xs font-semibold">
+        <span>📂</span> <span>Mở menu</span>
     </button>
 
-    <!-- Header -->
-    <header id="app-header" class="h-16 bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border px-6 flex items-center justify-between shrink-0 z-20">
-        <div class="flex items-center space-x-4">
-            <div class="flex items-center space-x-2">
-                <span class="text-xl">📖</span>
-                <h1 class="text-sm font-bold tracking-tight text-indigo-600 dark:text-indigo-400 hidden sm:block">Bilingual Pro</h1>
-            </div>
-            
-            <label class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition shadow-sm flex items-center space-x-1.5">
+    <!-- Header tối ưu mobile -->
+    <header id="app-header" class="h-14 bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border px-3 sm:px-6 flex items-center justify-between shrink-0 z-20">
+        <div class="flex items-center space-x-2.5">
+            <label class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition shadow-sm flex items-center space-x-1 shrink-0">
                 <span>📂</span>
-                <span>Mở EPUB</span>
+                <span>Mở sách</span>
                 <input type="file" id="epub-file" accept=".epub" class="hidden">
             </label>
             
-            <span id="current-book-name" class="text-xs text-slate-400 dark:text-dark-muted truncate max-w-[110px] sm:max-w-[180px]">Chưa chọn file sách</span>
+            <span id="current-book-name" class="text-xs text-slate-400 dark:text-dark-muted truncate max-w-[100px] sm:max-w-[160px]">Chưa chọn</span>
         </div>
 
-        <div class="relative hidden md:block w-64">
-            <input type="text" id="search-input" placeholder="🔍 Tìm kiếm nội dung trong sách..." class="w-full px-3.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-dark-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-200 placeholder-slate-400 transition">
-            <div id="search-results" class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border shadow-xl rounded-xl"></div>
-        </div>
-
-        <div class="flex items-center space-x-2.5">
-            <!-- Nút bật tắt Dark Mode -->
-            <button id="theme-toggle-btn" class="px-3 py-1.5 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-dark-border rounded-lg text-xs font-semibold transition text-slate-700 dark:text-slate-300 flex items-center space-x-1.5">
+        <div class="flex items-center space-x-2">
+            <!-- Nút bật tắt Dark Mode nhỏ gọn -->
+            <button id="theme-toggle-btn" class="p-1.5 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-dark-border rounded-lg text-xs transition text-slate-700 dark:text-slate-300">
                 <span id="theme-icon">🌙</span>
-                <span id="theme-text">Dark Mode</span>
             </button>
 
-            <div class="flex items-center space-x-1.5 bg-slate-50 dark:bg-slate-900/50 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-dark-border text-xs">
-                <span class="text-slate-400">Cỡ chữ:</span>
-                <select id="font-size-select" class="bg-transparent font-medium focus:outline-none cursor-pointer text-slate-700 dark:text-slate-300">
-                    <option value="14px" class="dark:bg-dark-card">14</option>
-                    <option value="16px" selected class="dark:bg-dark-card">16</option>
-                    <option value="18px" class="dark:bg-dark-card">18</option>
-                    <option value="20px" class="dark:bg-dark-card">20</option>
-                    <option value="22px" class="dark:bg-dark-card">22</option>
-                </select>
-            </div>
+            <!-- Chọn cỡ chữ -->
+            <select id="font-size-select" class="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-dark-border text-xs px-1.5 py-1.5 rounded-lg font-medium focus:outline-none cursor-pointer text-slate-700 dark:text-slate-300">
+                <option value="14px" class="dark:bg-dark-card">14</option>
+                <option value="16px" selected class="dark:bg-dark-card">16</option>
+                <option value="18px" class="dark:bg-dark-card">18</option>
+                <option value="20px" class="dark:bg-dark-card">20</option>
+            </select>
 
-            <div class="flex items-center space-x-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-dark-border rounded-lg p-0.5 text-slate-700 dark:text-slate-300">
+            <!-- Điều hướng trang -->
+            <div class="flex items-center space-x-0.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-dark-border rounded-lg p-0.5 text-slate-700 dark:text-slate-300">
                 <button id="prev" class="px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-xs font-bold transition disabled:opacity-40">◀</button>
-                <span id="progress" class="text-xs font-semibold px-1.5 text-slate-500 dark:text-slate-400">0%</span>
+                <span id="progress" class="text-[11px] font-semibold px-1 text-slate-500 dark:text-slate-400">0%</span>
                 <button id="next" class="px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-xs font-bold transition disabled:opacity-40">▶</button>
             </div>
 
-            <button id="toggle-header-btn" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-dark-border hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition text-slate-600 dark:text-slate-300" title="Thu gọn thanh tiêu đề">🗕</button>
+            <!-- Nút thu gọn header -->
+            <button id="toggle-header-btn" class="p-1.5 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-dark-border hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition text-slate-600 dark:text-slate-300" title="Thu gọn">🗕</button>
         </div>
     </header>
 
@@ -172,12 +162,12 @@
         <div id="viewer-container">
             <div id="viewer"></div>
             <div id="word-popup" class="bg-white dark:bg-dark-card text-slate-800 dark:text-dark-text border border-slate-200 dark:border-dark-border">
-                <div id="popup-header-handle" class="flex justify-between items-center mb-2">
+                <div id="popup-header-handle" class="flex justify-between items-center mb-1.5">
                     <div class="flex items-baseline space-x-2 truncate">
-                        <span id="popup-word" class="font-bold text-base truncate"></span>
-                        <span id="popup-ipa" class="text-xs text-slate-400 italic"></span>
+                        <span id="popup-word" class="font-bold text-sm truncate"></span>
+                        <span id="popup-ipa" class="text-[11px] text-slate-400 italic"></span>
                     </div>
-                    <button id="close-popup" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-semibold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded transition shrink-0">✕</button>
+                    <button id="close-popup" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-semibold px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded transition shrink-0">✕</button>
                 </div>
                 <div id="popup-meaning" class="text-xs leading-relaxed text-slate-600 dark:text-slate-300"></div>
             </div>
@@ -200,9 +190,6 @@
         const progressSpan = document.getElementById('progress');
         const themeToggleBtn = document.getElementById('theme-toggle-btn');
         const themeIcon = document.getElementById('theme-icon');
-        const themeText = document.getElementById('theme-text');
-        const searchInput = document.getElementById('search-input');
-        const searchResultsBox = document.getElementById('search-results');
         const currentBookNameSpan = document.getElementById('current-book-name');
         const fontSizeSelect = document.getElementById('font-size-select');
         const popup = document.getElementById('word-popup');
@@ -212,7 +199,7 @@
         const appHeader = document.getElementById('app-header');
         const viewerContainer = document.getElementById('viewer-container');
 
-        // Logic Kéo thả Popup hỗ trợ cảm ứng iPhone
+        // Logic Kéo thả Popup hỗ trợ cảm ứng iPhone mượt mà
         let isDragging = false;
         let startX, startY, initialLeft, initialTop;
 
@@ -237,8 +224,18 @@
             const dx = clientX - startX;
             const dy = clientY - startY;
             
-            popup.style.left = `${initialLeft + dx}px`;
-            popup.style.top = `${initialTop + dy}px`;
+            let newLeft = initialLeft + dx;
+            let newTop = initialTop + dy;
+            
+            // Giới hạn popup không bị kéo ra ngoài màn hình
+            const containerRect = viewerContainer.getBoundingClientRect();
+            if (newLeft < 10) newLeft = 10;
+            if (newLeft > containerRect.width - popup.offsetWidth - 10) newLeft = containerRect.width - popup.offsetWidth - 10;
+            if (newTop < 10) newTop = 10;
+            if (newTop > containerRect.height - popup.offsetHeight - 10) newTop = containerRect.height - popup.offsetHeight - 10;
+            
+            popup.style.left = `${newLeft}px`;
+            popup.style.top = `${newTop}px`;
         }
 
         popup.addEventListener('mousedown', (e) => { startDrag(e.clientX, e.clientY); e.stopPropagation(); });
@@ -266,11 +263,9 @@
             if (isDarkMode) {
                 document.documentElement.classList.add('dark');
                 themeIcon.textContent = '☀️';
-                themeText.textContent = 'Light Mode';
             } else {
                 document.documentElement.classList.remove('dark');
                 themeIcon.textContent = '🌙';
-                themeText.textContent = 'Dark Mode';
             }
         }
 
@@ -295,13 +290,15 @@
 
         closePopupBtn.addEventListener('click', () => { popup.style.display = 'none'; });
 
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('#search-input') && !e.target.closest('#search-results')) {
-                searchResultsBox.style.display = 'none';
+        // Tự động khôi phục sách đã đọc lần trước
+        window.addEventListener('DOMContentLoaded', async () => {
+            const savedFileName = localStorage.getItem(STORAGE_PREFIX_FILE);
+            if (savedFileName) {
+                currentFileName = savedFileName;
+                currentBookNameSpan.textContent = savedFileName;
             }
         });
 
-        // Xử lý tệp bằng Blob URL trực tiếp qua ePub.js để vượt qua lỗi chặn bộ nhớ trên Safari iOS
         fileInput.addEventListener('change', async function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -311,7 +308,6 @@
             progressSpan.textContent = "...";
 
             try {
-                // Tạo Blob URL sạch - Phương pháp tối ưu nhất cho Safari iOS
                 const bookUrl = URL.createObjectURL(file);
                 localStorage.setItem(STORAGE_PREFIX_FILE, currentFileName);
                 loadBook(bookUrl, currentFileName);
@@ -325,9 +321,9 @@
             if (book) book.destroy();
             document.getElementById('viewer').innerHTML = '';
 
-            // Khởi tạo trực tiếp từ nguồn chuẩn của ePub.js
             book = ePub(bookSource);
-            rendition = book.renderTo("viewer", { width: "100%", height: "100%", spread: "auto" });
+            // Tối ưu layout hiển thị trên màn hình nhỏ (chuyển sang dạng cuộn hoặc trang đơn linh hoạt)
+            rendition = book.renderTo("viewer", { width: "100%", height: "100%", spread: "none" });
 
             rendition.hooks.content.register((contents) => {
                 const doc = contents.document;
@@ -346,14 +342,17 @@
                         background-color: ${bgColor} !important;
                         color: ${textColor} !important;
                         font-size: ${currentFontSize} !important;
-                        line-height: 1.8 !important;
-                        padding: 24px 40px !important;
+                        line-height: 1.6 !important;
+                        padding: 16px 20px !important;
                         margin: 0 !important;
+                        -webkit-text-size-adjust: 100%;
                     }
                     * {
                         background-color: transparent !important;
                         color: ${textColor} !important;
+                        max-width: 100% !important;
                     }
+                    img { height: auto !important; }
                     p.vietnamese, div.vietnamese, span.vietnamese, .vi {
                         color: ${viColor} !important;
                     }
@@ -397,13 +396,14 @@
                                 popup.style.display = 'block';
                                 popup.style.transform = 'translate(-50%, -100%)';
 
-                                if (posY < 120) {
+                                if (posY < 100) {
                                     posY = (iframeRect.top - containerRect.top) + rect.bottom;
                                     popup.style.transform = 'translate(-50%, 8px)';
                                 }
 
-                                if (posX < 160) posX = 160;
-                                if (posX > containerRect.width - 160) posX = containerRect.width - 160;
+                                const popupWidth = popup.offsetWidth || 300;
+                                if (posX < popupWidth / 2 + 10) posX = popupWidth / 2 + 10;
+                                if (posX > containerRect.width - popupWidth / 2 - 10) posX = containerRect.width - popupWidth / 2 - 10;
 
                                 popup.style.left = `${posX}px`;
                                 popup.style.top = `${posY}px`;
@@ -412,11 +412,6 @@
                         }
                     }
                 });
-
-                doc.addEventListener('wheel', (event) => {
-                    if (event.deltaY > 40) { rendition.next(); event.preventDefault(); }
-                    else if (event.deltaY < -40) { rendition.prev(); event.preventDefault(); }
-                }, { passive: false });
             });
 
             rendition.on("relocated", (location) => {
@@ -439,77 +434,8 @@
             book.ready.then(() => book.locations.generate(1024));
         }
 
-        let searchTimeout = null;
-        searchInput.addEventListener('input', (e) => {
-            const rawQuery = e.target.value.trim();
-            clearTimeout(searchTimeout);
-            
-            if (!book || rawQuery.length < 2) {
-                searchResultsBox.style.display = 'none';
-                return;
-            }
-
-            const query = rawQuery.normalize('NFC').toLowerCase();
-
-            searchTimeout = setTimeout(async () => {
-                searchResultsBox.innerHTML = '<div class="p-3 text-xs text-slate-400 dark:text-dark-muted text-center font-medium">Đang tìm kiếm trong sách...</div>';
-                searchResultsBox.style.display = 'block';
-
-                try {
-                    let results = [];
-                    for (let item of book.spine.items) {
-                        try {
-                            let content = await item.load(book.load.bind(book));
-                            let textContent = "";
-                            if (typeof content === 'string') {
-                                const doc = new DOMParser().parseFromString(content, 'text/html');
-                                textContent = doc.body.textContent || "";
-                            } else if (content && content.textContent) {
-                                textContent = content.textContent;
-                            }
-
-                            const cleanText = textContent.normalize('NFC').replace(/\s+/g, ' ');
-                            if (cleanText.toLowerCase().includes(query)) {
-                                results.push({ cfi: item.cfi, text: cleanText.substring(0, 130) + "..." });
-                            }
-                            if (results.length >= 10) break;
-                        } catch (err) { continue; }
-                    }
-
-                    if (results.length === 0) {
-                        searchResultsBox.innerHTML = '<div class="p-3 text-xs text-slate-400 dark:text-dark-muted text-center font-medium">Không tìm thấy kết quả phù hợp.</div>';
-                    } else {
-                        searchResultsBox.innerHTML = results.map(res => `
-                            <div class="search-item hover:bg-slate-100 dark:hover:bg-slate-800" data-cfi="${res.cfi}">
-                                <div class="font-semibold text-indigo-600 dark:text-indigo-400 text-xs mb-0.5">Đoạn khớp:</div>
-                                <div class="text-slate-600 dark:text-slate-300 truncate">${res.text}</div>
-                            </div>
-                        `).join('');
-
-                        searchResultsBox.querySelectorAll('.search-item').forEach(el => {
-                            el.addEventListener('click', () => {
-                                const targetCfi = el.getAttribute('data-cfi');
-                                if (targetCfi && rendition) {
-                                    rendition.display(targetCfi);
-                                }
-                                searchResultsBox.style.display = 'none';
-                            });
-                        });
-                    }
-                } catch (searchErr) {
-                    console.error("Lỗi tìm kiếm:", searchErr);
-                    searchResultsBox.innerHTML = '<div class="p-3 text-xs text-red-400 text-center font-medium">Có lỗi xảy ra khi tìm kiếm.</div>';
-                }
-            }, 350);
-        });
-
         prevBtn.addEventListener('click', () => { if (rendition) rendition.prev(); });
         nextBtn.addEventListener('click', () => { if (rendition) rendition.next(); });
-        document.addEventListener('keydown', (e) => {
-            if (!rendition) return;
-            if (e.key === 'ArrowLeft') rendition.prev();
-            if (e.key === 'ArrowRight') rendition.next();
-        });
     </script>
 </body>
 </html>
