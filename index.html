@@ -28,7 +28,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow: hidden; position: fixed; width: 100%; height: 100%; }
+        * { box-sizing: border-box; }
+        html, body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: hidden; 
+            background-color: #f8fafc;
+        }
+        .dark body { background-color: #0f172a; }
 
         #app-header {
             transition: transform 0.3s ease, opacity 0.3s ease;
@@ -46,13 +56,12 @@
 
         #viewer-container {
             width: 100%;
-            height: calc(100vh - 56px);
+            height: calc(100% - 52px);
             position: relative;
             overflow: hidden;
-            transition: height 0.3s ease;
         }
         body.header-hidden #viewer-container {
-            height: 100vh;
+            height: 100%;
         }
 
         #viewer { width: 100%; height: 100%; }
@@ -61,37 +70,15 @@
             display: none;
             position: absolute;
             z-index: 1200;
-            padding: 12px 16px;
+            padding: 12px 14px;
             width: 88vw;
-            max-width: 320px;
-            border-radius: 1rem;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.08);
+            max-width: 300px;
+            border-radius: 12px;
+            box-shadow: 0 15px 25px -5px rgba(0,0,0,0.25);
             user-select: none;
-            box-sizing: border-box;
         }
 
-        #popup-header-handle {
-            cursor: move;
-        }
-
-        #search-results {
-            display: none;
-            position: absolute;
-            top: 50px;
-            left: 0;
-            width: 100%;
-            max-height: 300px;
-            overflow-y: auto;
-            z-index: 1100;
-            padding: 6px;
-        }
-        .search-item {
-            padding: 8px 12px;
-            cursor: pointer;
-            font-size: 12px;
-            border-radius: 0.5rem;
-            transition: background 0.15s;
-        }
+        #popup-header-handle { cursor: move; }
 
         #restore-header-btn {
             display: none;
@@ -114,60 +101,59 @@
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
     </style>
 </head>
-<body class="h-full bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-dark-text flex flex-col transition-colors duration-200">
+<body class="h-full bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-dark-text flex flex-col">
 
     <button id="restore-header-btn" class="bg-slate-900/90 dark:bg-slate-100/90 text-white dark:text-slate-900 border border-slate-700/20 px-3 py-1.5 rounded-lg text-xs font-semibold">
         <span>📂</span> <span>Mở menu</span>
     </button>
 
-    <!-- Header tối ưu mobile -->
-    <header id="app-header" class="h-14 bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border px-3 sm:px-6 flex items-center justify-between shrink-0 z-20">
-        <div class="flex items-center space-x-2.5">
-            <label class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition shadow-sm flex items-center space-x-1 shrink-0">
+    <!-- Header tối ưu gọn gàng cho iPhone -->
+    <header id="app-header" class="h-[52px] bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border px-2.5 flex items-center justify-between shrink-0 z-20 w-full">
+        <div class="flex items-center space-x-2 overflow-hidden">
+            <label class="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-semibold px-2.5 py-1.5 rounded-lg transition shadow-sm flex items-center space-x-1 shrink-0">
                 <span>📂</span>
                 <span>Mở sách</span>
                 <input type="file" id="epub-file" accept=".epub" class="hidden">
             </label>
-            
-            <span id="current-book-name" class="text-xs text-slate-400 dark:text-dark-muted truncate max-w-[100px] sm:max-w-[160px]">Chưa chọn</span>
+            <span id="current-book-name" class="text-[11px] text-slate-400 dark:text-dark-muted truncate max-w-[90px]">Chưa chọn</span>
         </div>
 
-        <div class="flex items-center space-x-2">
-            <!-- Nút bật tắt Dark Mode nhỏ gọn -->
-            <button id="theme-toggle-btn" class="p-1.5 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-dark-border rounded-lg text-xs transition text-slate-700 dark:text-slate-300">
+        <div class="flex items-center space-x-1.5 shrink-0">
+            <!-- Nút Dark Mode -->
+            <button id="theme-toggle-btn" class="p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs transition text-slate-700 dark:text-slate-300">
                 <span id="theme-icon">🌙</span>
             </button>
 
-            <!-- Chọn cỡ chữ -->
-            <select id="font-size-select" class="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-dark-border text-xs px-1.5 py-1.5 rounded-lg font-medium focus:outline-none cursor-pointer text-slate-700 dark:text-slate-300">
-                <option value="14px" class="dark:bg-dark-card">14</option>
-                <option value="16px" selected class="dark:bg-dark-card">16</option>
-                <option value="18px" class="dark:bg-dark-card">18</option>
-                <option value="20px" class="dark:bg-dark-card">20</option>
+            <!-- Cỡ chữ -->
+            <select id="font-size-select" class="bg-slate-100 dark:bg-slate-800 border-0 text-[11px] px-1 py-1.5 rounded-lg font-medium focus:outline-none text-slate-700 dark:text-slate-300">
+                <option value="14px">14</option>
+                <option value="16px" selected>16</option>
+                <option value="18px">18</option>
+                <option value="20px">20</option>
             </select>
 
-            <!-- Điều hướng trang -->
-            <div class="flex items-center space-x-0.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-dark-border rounded-lg p-0.5 text-slate-700 dark:text-slate-300">
-                <button id="prev" class="px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-xs font-bold transition disabled:opacity-40">◀</button>
-                <span id="progress" class="text-[11px] font-semibold px-1 text-slate-500 dark:text-slate-400">0%</span>
-                <button id="next" class="px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-xs font-bold transition disabled:opacity-40">▶</button>
+            <!-- Điều hướng -->
+            <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 text-slate-700 dark:text-slate-300">
+                <button id="prev" class="px-2 py-1 text-[11px] font-bold disabled:opacity-40">◀</button>
+                <span id="progress" class="text-[10px] font-semibold px-1 text-slate-500">0%</span>
+                <button id="next" class="px-2 py-1 text-[11px] font-bold disabled:opacity-40">▶</button>
             </div>
 
-            <!-- Nút thu gọn header -->
-            <button id="toggle-header-btn" class="p-1.5 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-dark-border hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition text-slate-600 dark:text-slate-300" title="Thu gọn">🗕</button>
+            <!-- Nút ẩn menu -->
+            <button id="toggle-header-btn" class="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-300" title="Thu gọn">🗕</button>
         </div>
     </header>
 
-    <main class="flex-1 flex items-center justify-center overflow-hidden p-0 m-0">
+    <main class="flex-1 w-full relative overflow-hidden">
         <div id="viewer-container">
             <div id="viewer"></div>
             <div id="word-popup" class="bg-white dark:bg-dark-card text-slate-800 dark:text-dark-text border border-slate-200 dark:border-dark-border">
-                <div id="popup-header-handle" class="flex justify-between items-center mb-1.5">
+                <div id="popup-header-handle" class="flex justify-between items-center mb-1">
                     <div class="flex items-baseline space-x-2 truncate">
                         <span id="popup-word" class="font-bold text-sm truncate"></span>
                         <span id="popup-ipa" class="text-[11px] text-slate-400 italic"></span>
                     </div>
-                    <button id="close-popup" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-semibold px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded transition shrink-0">✕</button>
+                    <button id="close-popup" class="text-slate-400 text-xs px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">✕</button>
                 </div>
                 <div id="popup-meaning" class="text-xs leading-relaxed text-slate-600 dark:text-slate-300"></div>
             </div>
@@ -199,7 +185,6 @@
         const appHeader = document.getElementById('app-header');
         const viewerContainer = document.getElementById('viewer-container');
 
-        // Logic Kéo thả Popup hỗ trợ cảm ứng iPhone mượt mà
         let isDragging = false;
         let startX, startY, initialLeft, initialTop;
 
@@ -207,13 +192,10 @@
             isDragging = true;
             startX = clientX;
             startY = clientY;
-            
             const rect = popup.getBoundingClientRect();
             const containerRect = viewerContainer.getBoundingClientRect();
-            
             initialLeft = rect.left - containerRect.left;
             initialTop = rect.top - containerRect.top;
-            
             popup.style.transform = 'none';
             popup.style.left = `${initialLeft}px`;
             popup.style.top = `${initialTop}px`;
@@ -221,39 +203,25 @@
 
         function onDrag(clientX, clientY) {
             if (!isDragging) return;
-            const dx = clientX - startX;
-            const dy = clientY - startY;
-            
-            let newLeft = initialLeft + dx;
-            let newTop = initialTop + dy;
-            
-            // Giới hạn popup không bị kéo ra ngoài màn hình
+            let newLeft = initialLeft + (clientX - startX);
+            let newTop = initialTop + (clientY - startY);
             const containerRect = viewerContainer.getBoundingClientRect();
-            if (newLeft < 10) newLeft = 10;
-            if (newLeft > containerRect.width - popup.offsetWidth - 10) newLeft = containerRect.width - popup.offsetWidth - 10;
-            if (newTop < 10) newTop = 10;
-            if (newTop > containerRect.height - popup.offsetHeight - 10) newTop = containerRect.height - popup.offsetHeight - 10;
-            
+            if (newLeft < 5) newLeft = 5;
+            if (newLeft > containerRect.width - popup.offsetWidth - 5) newLeft = containerRect.width - popup.offsetWidth - 5;
+            if (newTop < 5) newTop = 5;
+            if (newTop > containerRect.height - popup.offsetHeight - 5) newTop = containerRect.height - popup.offsetHeight - 5;
             popup.style.left = `${newLeft}px`;
             popup.style.top = `${newTop}px`;
         }
 
-        popup.addEventListener('mousedown', (e) => { startDrag(e.clientX, e.clientY); e.stopPropagation(); });
-        document.addEventListener('mousemove', (e) => onDrag(e.clientX, e.clientY));
-        document.addEventListener('mouseup', () => { isDragging = false; });
-
-        popup.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 1) { startDrag(e.touches[0].clientX, e.touches[0].clientY); e.stopPropagation(); }
-        }, { passive: true });
-        document.addEventListener('touchmove', (e) => {
-            if (isDragging && e.touches.length === 1) { onDrag(e.touches[0].clientX, e.touches[0].clientY); }
-        }, { passive: true });
+        popup.addEventListener('touchstart', (e) => { if (e.touches.length === 1) { startDrag(e.touches[0].clientX, e.touches[0].clientY); e.stopPropagation(); } }, { passive: true });
+        document.addEventListener('touchmove', (e) => { if (isDragging && e.touches.length === 1) { onDrag(e.touches[0].clientX, e.touches[0].clientY); } }, { passive: true });
         document.addEventListener('touchend', () => { isDragging = false; });
 
         function toggleHeader() {
             document.body.classList.toggle('header-hidden');
             appHeader.classList.toggle('hidden-header');
-            setTimeout(() => { if (rendition) rendition.resize(); }, 350);
+            setTimeout(() => { if (rendition) rendition.resize(); }, 300);
         }
 
         toggleHeaderBtn.addEventListener('click', toggleHeader);
@@ -278,106 +246,56 @@
             }
         }
 
-        themeToggleBtn.addEventListener('click', () => {
-            isDarkMode = !isDarkMode;
-            applyThemeAndStyles();
-        });
-
-        fontSizeSelect.addEventListener('change', (e) => {
-            currentFontSize = e.target.value;
-            applyThemeAndStyles();
-        });
-
+        themeToggleBtn.addEventListener('click', () => { isDarkMode = !isDarkMode; applyThemeAndStyles(); });
+        fontSizeSelect.addEventListener('change', (e) => { currentFontSize = e.target.value; applyThemeAndStyles(); });
         closePopupBtn.addEventListener('click', () => { popup.style.display = 'none'; });
-
-        // Tự động khôi phục sách đã đọc lần trước
-        window.addEventListener('DOMContentLoaded', async () => {
-            const savedFileName = localStorage.getItem(STORAGE_PREFIX_FILE);
-            if (savedFileName) {
-                currentFileName = savedFileName;
-                currentBookNameSpan.textContent = savedFileName;
-            }
-        });
 
         fileInput.addEventListener('change', async function(e) {
             const file = e.target.files[0];
             if (!file) return;
-
             currentFileName = file.name;
             currentBookNameSpan.textContent = currentFileName;
             progressSpan.textContent = "...";
-
             try {
                 const bookUrl = URL.createObjectURL(file);
                 localStorage.setItem(STORAGE_PREFIX_FILE, currentFileName);
                 loadBook(bookUrl, currentFileName);
-            } catch (err) {
-                console.error(err);
-                alert("Không thể khởi tạo file EPUB trên thiết bị này.");
-            }
+            } catch (err) { alert("Không thể khởi tạo file EPUB."); }
         });
 
         function loadBook(bookSource, fileName) {
             if (book) book.destroy();
             document.getElementById('viewer').innerHTML = '';
-
             book = ePub(bookSource);
-            // Tối ưu layout hiển thị trên màn hình nhỏ (chuyển sang dạng cuộn hoặc trang đơn linh hoạt)
             rendition = book.renderTo("viewer", { width: "100%", height: "100%", spread: "none" });
 
             rendition.hooks.content.register((contents) => {
                 const doc = contents.document;
-
                 let bgColor = isDarkMode ? '#0f172a' : '#ffffff';
                 let textColor = isDarkMode ? '#f1f5f9' : '#1e293b';
                 let viColor = isDarkMode ? '#38bdf8' : '#0284c7';
 
-                const oldStyle = doc.getElementById('bilingual-reader-pro-style');
-                if (oldStyle) oldStyle.remove();
-
                 const styleEl = doc.createElement('style');
-                styleEl.id = 'bilingual-reader-pro-style';
                 styleEl.innerHTML = `
                     html, body {
                         background-color: ${bgColor} !important;
                         color: ${textColor} !important;
                         font-size: ${currentFontSize} !important;
                         line-height: 1.6 !important;
-                        padding: 16px 20px !important;
+                        padding: 12px 16px !important;
                         margin: 0 !important;
-                        -webkit-text-size-adjust: 100%;
                     }
-                    * {
-                        background-color: transparent !important;
-                        color: ${textColor} !important;
-                        max-width: 100% !important;
-                    }
-                    img { height: auto !important; }
-                    p.vietnamese, div.vietnamese, span.vietnamese, .vi {
-                        color: ${viColor} !important;
-                    }
+                    * { background-color: transparent !important; color: ${textColor} !important; max-width: 100% !important; }
+                    p.vietnamese, div.vietnamese, span.vietnamese, .vi { color: ${viColor} !important; }
                 `;
                 doc.head.appendChild(styleEl);
-
-                doc.querySelectorAll('*').forEach(el => {
-                    if (el.style) {
-                        el.style.backgroundColor = 'transparent';
-                        el.style.color = textColor;
-                    }
-                    const text = el.textContent || "";
-                    if (/[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]/i.test(text)) {
-                        if (!el.classList.contains('vietnamese') && el.children.length === 0) {
-                            el.classList.add('vietnamese');
-                        }
-                    }
-                });
 
                 doc.addEventListener('click', (event) => {
                     const spanEl = event.target.closest('span');
                     if (spanEl) {
                         const wordText = spanEl.textContent.trim();
                         const ipa = spanEl.getAttribute('data-ipa') || spanEl.dataset.ipa || '';
-                        const meaning = spanEl.getAttribute('data-trans') || spanEl.getAttribute('data-meaning') || spanEl.dataset.trans || spanEl.dataset.meaning || spanEl.getAttribute('title') || 'Đang cập nhật dữ liệu nghĩa...';
+                        const meaning = spanEl.getAttribute('data-trans') || spanEl.getAttribute('data-meaning') || 'Đang cập nhật nghĩa...';
 
                         if (wordText) {
                             document.getElementById('popup-word').textContent = wordText;
@@ -389,23 +307,16 @@
                             if (iframe) {
                                 const iframeRect = iframe.getBoundingClientRect();
                                 const containerRect = viewerContainer.getBoundingClientRect();
-                                
                                 let posX = (iframeRect.left - containerRect.left) + rect.left + (rect.width / 2);
                                 let posY = (iframeRect.top - containerRect.top) + rect.top;
 
                                 popup.style.display = 'block';
                                 popup.style.transform = 'translate(-50%, -100%)';
-
-                                if (posY < 100) {
+                                if (posY < 80) {
                                     posY = (iframeRect.top - containerRect.top) + rect.bottom;
                                     popup.style.transform = 'translate(-50%, 8px)';
                                 }
-
-                                const popupWidth = popup.offsetWidth || 300;
-                                if (posX < popupWidth / 2 + 10) posX = popupWidth / 2 + 10;
-                                if (posX > containerRect.width - popupWidth / 2 - 10) posX = containerRect.width - popupWidth / 2 - 10;
-
-                                popup.style.left = `${posX}px`;
+                                popup.style.left = `${Math.max(140, Math.min(containerRect.width - 140, posX))}px`;
                                 popup.style.top = `${posY}px`;
                             }
                             event.stopPropagation();
@@ -426,10 +337,7 @@
             const savedCfi = fileName ? localStorage.getItem(STORAGE_PREFIX_CFI + fileName) : null;
             rendition.display(savedCfi || undefined).then(() => {
                 prevBtn.disabled = false; nextBtn.disabled = false;
-            }).catch(() => {
-                rendition.display();
-                prevBtn.disabled = false; nextBtn.disabled = false;
-            });
+            }).catch(() => { rendition.display(); prevBtn.disabled = false; nextBtn.disabled = false; });
 
             book.ready.then(() => book.locations.generate(1024));
         }
