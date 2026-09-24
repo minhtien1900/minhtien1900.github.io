@@ -214,14 +214,14 @@
         const appHeader = document.getElementById('app-header');
         const viewerContainer = document.getElementById('viewer-container');
 
-        // Logic Kéo thả Popup (Draggable Popup)
+        // Logic Kéo thả Popup hỗ trợ cả chuột (Desktop) và chạm vuốt (Mobile/iPhone)
         let isDragging = false;
         let startX, startY, initialLeft, initialTop;
 
-        popup.addEventListener('mousedown', (e) => {
+        function startDrag(clientX, clientY) {
             isDragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
+            startX = clientX;
+            startY = clientY;
             
             const rect = popup.getBoundingClientRect();
             const containerRect = viewerContainer.getBoundingClientRect();
@@ -229,29 +229,45 @@
             initialLeft = rect.left - containerRect.left;
             initialTop = rect.top - containerRect.top;
             
-            // Xóa transform khi đang kéo tự do để tránh lệch tọa độ
             popup.style.transform = 'none';
             popup.style.left = `${initialLeft}px`;
             popup.style.top = `${initialTop}px`;
-            
-            e.stopPropagation();
-        });
+        }
 
-        document.addEventListener('mousemove', (e) => {
+        function onDrag(clientX, clientY) {
             if (!isDragging) return;
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
+            const dx = clientX - startX;
+            const dy = clientY - startY;
             
             let newLeft = initialLeft + dx;
             let newTop = initialTop + dy;
             
             popup.style.left = `${newLeft}px`;
             popup.style.top = `${newTop}px`;
-        });
+        }
 
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
+        popup.addEventListener('mousedown', (e) => {
+            startDrag(e.clientX, e.clientY);
+            e.stopPropagation();
         });
+        document.addEventListener('mousemove', (e) => onDrag(e.clientX, e.clientY));
+        document.addEventListener('mouseup', () => { isDragging = false; });
+
+        // Hỗ trợ cảm ứng vuốt kéo popup trên màn hình iPhone
+        popup.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                startDrag(e.touches[0].clientX, e.touches[0].clientY);
+                e.stopPropagation();
+            }
+        }, { passive: true });
+
+        document.addEventListener('touchmove', (e) => {
+            if (isDragging && e.touches.length === 1) {
+                onDrag(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: true });
+
+        document.addEventListener('touchend', () => { isDragging = false; });
 
         function toggleHeader() {
             document.body.classList.toggle('header-hidden');
@@ -301,6 +317,7 @@
             }
         });
 
+        // Khôi phục sách cũ bằng FileReader an toàn cho iOS
         window.addEventListener('DOMContentLoaded', async () => {
             const savedFileName = localStorage.getItem(STORAGE_PREFIX_FILE);
             if (savedFileName) {
@@ -317,26 +334,39 @@
             }
         });
 
-        fileInput.addEventListener('change', async function(e) {
+        // Đọc file tối ưu hóa riêng cho Safari iOS thông qua FileReader
+        fileInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
             currentFileName = file.name;
             currentBookNameSpan.textContent = currentFileName;
+            progressSpan.textContent = "...";
 
-            try {
-                progressSpan.textContent = "...";
-                const arrayBuffer = await file.arrayBuffer();
-                bookArrayBuffer = arrayBuffer;
+            const reader = new FileReader();
+            reader.onload = async function(event) {
+                try {
+                    const arrayBuffer = event.target.result;
+                    bookArrayBuffer = arrayBuffer;
 
-                localStorage.setItem(STORAGE_PREFIX_FILE, currentFileName);
-                localStorage.setItem(STORAGE_PREFIX_DATA + currentFileName, arrayBufferToHex(arrayBuffer));
+                    // Lưu vào localStorage (có catch phòng trường hợp file quá lớn vượt quá dung lượng lưu trữ của trình duyệt)
+                    try {
+                        localStorage.setItem(STORAGE_PREFIX_FILE, currentFileName);
+                        localStorage.setItem(STORAGE_PREFIX_DATA + currentFileName, arrayBufferToHex(arrayBuffer));
+                    } catch (storageErr) {
+                        console.warn("File quá lớn để lưu tự động vào bộ nhớ tạm trình duyệt, nhưng vẫn đọc tốt trong phiên này.");
+                    }
 
-                await sanitizeAndLoadBook(arrayBuffer, currentFileName);
-            } catch (err) {
-                console.error(err);
-                alert("Không thể đọc file EPUB này.");
-            }
+                    await sanitizeAndLoadBook(arrayBuffer, currentFileName);
+                } catch (err) {
+                    console.error(err);
+                    alert("Không thể giải mã file EPUB này trên Safari.");
+                }
+            };
+            reader.onerror = function() {
+                alert("Lỗi đọc file trên thiết bị di động.");
+            };
+            reader.readAsArrayBuffer(file);
         });
 
         async function sanitizeAndLoadBook(arrayBuffer, fileName) {
@@ -454,7 +484,9 @@
                 popup.style.display = 'none';
                 const percent = book.locations.percentageFromCfi(location.start.cfi);
                 if (!isNaN(percent)) progressSpan.textContent = `${Math.round(percent * 100)}%`;
-                if (fileName) localStorage.setItem(STORAGE_PREFIX_CFI + fileName, location.start.cfi);
+                if (fileName) {
+                    try { localStorage.setItem(STORAGE_PREFIX_CFI + fileName, location.start.cfi); } catch(e){}
+                }
             });
 
             const savedCfi = fileName ? localStorage.getItem(STORAGE_PREFIX_CFI + fileName) : null;
