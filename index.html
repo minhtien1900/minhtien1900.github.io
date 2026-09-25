@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bilingual E-Reader V11</title>
+    <title>Bilingual E-Reader V12</title>
     <!-- Thư viện JSZip giải nén EPUB chuẩn xác 100% -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
     <style>
@@ -55,16 +55,20 @@
 
         header {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 14px;
+            flex-direction: column;
+            padding: 10px 12px;
             background-color: var(--panel-bg);
             border-bottom: 1px solid var(--border-color);
             box-shadow: 0 2px 6px var(--shadow-color);
             z-index: 10;
-            flex-wrap: wrap;
             gap: 8px;
             position: relative;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .progress-bar-container {
@@ -98,7 +102,7 @@
         .upload-btn {
             background-color: var(--accent-color);
             color: white;
-            padding: 5px 10px;
+            padding: 6px 12px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
@@ -109,18 +113,25 @@
             display: flex;
             gap: 6px;
             align-items: center;
-            flex-wrap: wrap;
+            overflow-x: auto;
+            padding-bottom: 2px;
+            scrollbar-width: none; /* Ẩn thanh cuộn trên Firefox */
+        }
+
+        .controls::-webkit-scrollbar {
+            display: none; /* Ẩn thanh cuộn trên Chrome/Safari */
         }
 
         button.control-btn, .auto-speak-btn-top, .save-pos-btn, select.control-select {
             background: var(--panel-bg);
             border: 1px solid var(--border-color);
             color: var(--text-color);
-            padding: 5px 8px;
+            padding: 6px 10px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 11px;
+            font-size: 12px;
+            white-space: nowrap;
         }
 
         select.control-select {
@@ -184,6 +195,19 @@
         }
 
         @media (min-width: 768px) {
+            header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px 16px;
+            }
+            .header-top {
+                margin-bottom: 0;
+            }
+            .controls {
+                overflow-x: visible;
+                flex-wrap: wrap;
+            }
             .reader-container {
                 padding: 30px 20px 140px 20px;
             }
@@ -271,7 +295,7 @@
 
         .search-input {
             flex: 1;
-            padding: 8px 12px;
+            padding: 10px 12px;
             border: 1px solid var(--border-color);
             border-radius: 6px;
             background: var(--bg-color);
@@ -388,22 +412,24 @@
 <body>
 
     <header>
-        <div class="brand-title">📖 Bilingual E-Reader V11</div>
-        <div class="upload-section">
-            <label for="epub-file" class="upload-btn">📂 Mở EPUB</label>
-            <input type="file" id="epub-file" accept=".epub">
+        <div class="header-top">
+            <div class="brand-title">📖 Bilingual E-Reader V12</div>
+            <div class="upload-section">
+                <label for="epub-file" class="upload-btn">📂 Mở EPUB</label>
+                <input type="file" id="epub-file" accept=".epub">
+            </div>
         </div>
         <div class="controls">
             <button class="control-btn search-open-btn" id="search-open-btn" title="Tìm kiếm thông minh">🔍 Tìm kiếm</button>
             <select id="font-family-select" class="control-select" title="Chọn font chữ">
                 <option value="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Roboto, sans-serif">Font: Mặc định</option>
-                <option value="'Georgia', 'Times New Roman', serif">Font: Serif (Sách)</option>
+                <option value="'Georgia', 'Times New Roman', serif">Font: Serif</option>
                 <option value="'Arial', 'Helvetica', sans-serif">Font: Sans-Serif</option>
-                <option value="'Courier New', Courier, monospace">Font: Monospace</option>
+                <option value="'Courier New', Courier, monospace">Font: Mono</option>
             </select>
             <button class="control-btn" id="font-decrease" title="Giảm cỡ chữ">A-</button>
             <button class="control-btn" id="font-increase" title="Tăng cỡ chữ">A+</button>
-            <button class="auto-speak-btn-top" id="auto-speak-toggle" title="Bật/Tắt tự động đọc từ khi click">🔊 Auto Speak: OFF</button>
+            <button class="auto-speak-btn-top" id="auto-speak-toggle" title="Bật/Tắt đọc từ">🔊 Auto Speak</button>
             <button class="save-pos-btn" id="save-pos-btn">💾 Lưu vị trí</button>
             <button class="control-btn" id="theme-toggle">🌙 Đêm</button>
         </div>
@@ -416,8 +442,8 @@
     <div class="main-container">
         <div class="reader-container" id="reader-container">
             <div class="welcome-screen" id="welcome-screen">
-                <h2>Trình Đọc Sách Song Ngữ V11</h2>
-                <p>Tích hợp tính năng Tìm kiếm thông minh, giúp bạn tra cứu từ vựng và câu văn nhanh chóng trong toàn bộ cuốn sách.</p>
+                <h2>Trình Đọc Sách Song Ngữ V12</h2>
+                <p>Giao diện di động tối ưu: Thanh công cụ trượt ngang mượt mà, nút bấm rộng rãi, thao tác dễ dàng.</p>
             </div>
             <div class="book-content" id="book-content" style="display: none;"></div>
         </div>
@@ -426,11 +452,11 @@
         <div class="search-modal" id="search-modal">
             <div class="search-modal-content">
                 <div class="search-modal-header">
-                    <input type="text" class="search-input" id="search-input-box" placeholder="Nhập từ khóa tiếng Anh hoặc tiếng Việt để tìm...">
+                    <input type="text" class="search-input" id="search-input-box" placeholder="Nhập từ khóa tiếng Anh hoặc tiếng Việt...">
                     <button class="control-btn" id="search-close-btn">✕</button>
                 </div>
                 <div class="search-results-container" id="search-results-container">
-                    <div style="text-align: center; color: #a0aec0; padding: 20px; font-size: 13px;">Nhập từ khóa để bắt đầu tìm kiếm nội dung sách...</div>
+                    <div style="text-align: center; color: #a0aec0; padding: 20px; font-size: 13px;">Nhập từ khóa để bắt đầu tìm kiếm...</div>
                 </div>
             </div>
         </div>
@@ -469,7 +495,6 @@
         const panelSpeakBtn = document.getElementById('panel-speak-btn');
         const panelCloseBtn = document.getElementById('panel-close-btn');
 
-        // Elements tìm kiếm
         const searchOpenBtn = document.getElementById('search-open-btn');
         const searchModal = document.getElementById('search-modal');
         const searchCloseBtn = document.getElementById('search-close-btn');
@@ -496,10 +521,10 @@
 
         function updateAutoSpeakButtonUI() {
             if (isAutoSpeakOn) {
-                autoSpeakToggleBtn.textContent = '🔊 Auto Speak: ON';
+                autoSpeakToggleBtn.textContent = '🔊 Speak: ON';
                 autoSpeakToggleBtn.classList.add('active');
             } else {
-                autoSpeakToggleBtn.textContent = '🔇 Auto Speak: OFF';
+                autoSpeakToggleBtn.textContent = '🔇 Speak: OFF';
                 autoSpeakToggleBtn.classList.remove('active');
             }
         }
@@ -546,10 +571,9 @@
             meaningPanel.classList.remove('active');
         });
 
-        // Xử lý Modal Tìm Kiếm
         searchOpenBtn.addEventListener('click', () => {
             if (bookContent.style.display === 'none') {
-                alert('Vui lòng mở một file EPUB trước khi sử dụng tính năng tìm kiếm!');
+                alert('Vui lòng mở một file EPUB trước khi tìm kiếm!');
                 return;
             }
             searchModal.classList.add('active');
@@ -566,14 +590,13 @@
             }
         });
 
-        // Thuật toán Tìm kiếm thông minh thực tế
         let searchDebounceTimer;
         searchInputBox.addEventListener('input', (e) => {
             clearTimeout(searchDebounceTimer);
             const keyword = e.target.value.trim().toLowerCase();
 
             if (!keyword) {
-                searchResultsContainer.innerHTML = '<div style="text-align: center; color: #a0aec0; padding: 20px; font-size: 13px;">Nhập từ khóa để bắt đầu tìm kiếm nội dung sách...</div>';
+                searchResultsContainer.innerHTML = '<div style="text-align: center; color: #a0aec0; padding: 20px; font-size: 13px;">Nhập từ khóa để bắt đầu tìm kiếm...</div>';
                 return;
             }
 
@@ -586,7 +609,7 @@
             const paragraphs = bookContent.querySelectorAll('p, div.epub-chapter p, div.epub-chapter div');
             let matches = [];
 
-            paragraphs.forEach((p, index) => {
+            paragraphs.forEach((p) => {
                 const text = p.textContent || "";
                 if (text.toLowerCase().includes(keyword)) {
                     matches.push({ element: p, text: text });
@@ -594,14 +617,13 @@
             });
 
             if (matches.length === 0) {
-                searchResultsContainer.innerHTML = `<div style="text-align: center; color: #e53e3e; padding: 20px; font-size: 13px;">Không tìm thấy kết quả nào cho "${keyword}"</div>`;
+                searchResultsContainer.innerHTML = `<div style="text-align: center; color: #e53e3e; padding: 20px; font-size: 13px;">Không tìm thấy kết quả cho "${keyword}"</div>`;
                 return;
             }
 
             let htmlResults = `<div style="font-size: 12px; color: var(--text-color); margin-bottom: 8px; font-weight: 600;">Tìm thấy ${matches.length} kết quả:</div>`;
             
-            matches.slice(0, 50).forEach((match, idx) => { // Giới hạn hiển thị 50 kết quả đầu tiên cho mượt
-                // Tạo đoạn trích có highlight từ khóa nhẹ nhàng
+            matches.slice(0, 50).forEach((match, idx) => {
                 let snippet = match.text;
                 if (snippet.length > 120) {
                     const lowerText = snippet.toLowerCase();
@@ -621,16 +643,11 @@
 
             searchResultsContainer.innerHTML = htmlResults;
 
-            // Gắn sự kiện click để nhảy trực tiếp đến vị trí đoạn văn trong sách
             searchResultsContainer.querySelectorAll('.search-result-item').forEach((item, idx) => {
                 item.addEventListener('click', () => {
                     const targetEl = matches[idx].element;
                     searchModal.classList.remove('active');
-                    
-                    // Cuộn màn hình đến đoạn văn tương ứng
                     targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-                    // Hiệu ứng nhấp nháy highlight tạm thời
                     targetEl.classList.add('search-highlight');
                     setTimeout(() => {
                         targetEl.classList.remove('search-highlight');
@@ -645,12 +662,11 @@
 
         savePosBtn.addEventListener('click', () => {
             if (bookContent.style.display === 'none') {
-                alert('Chưa có sách nào đang mở để lưu vị trí!');
+                alert('Chưa có sách nào đang mở!');
                 return;
             }
             if (activeBookKey) {
                 localStorage.setItem(`pos_${activeBookKey}`, readerContainer.scrollTop);
-                const oldText = savePosBtn.textContent;
                 savePosBtn.textContent = '✅ Đã lưu!';
                 setTimeout(() => { savePosBtn.textContent = '💾 Lưu vị trí'; }, 1500);
             }
@@ -677,7 +693,6 @@
             if (!file) return;
 
             activeBookKey = `${file.name}_${file.size}`;
-
             welcomeScreen.style.display = 'none';
             bookContent.style.display = 'block';
             
@@ -688,7 +703,7 @@
 
                 updateProgress(30, "Đang đọc cấu trúc sách...");
                 const containerFile = zipContent.file("META-INF/container.xml");
-                if (!containerFile) throw new Error("Không tìm thấy file container.xml trong EPUB.");
+                if (!containerFile) throw new Error("Không tìm thấy container.xml.");
                 
                 const containerXmlText = await containerFile.async("text");
                 const parser = new DOMParser();
@@ -700,12 +715,12 @@
                 const opfFolder = opfPath.includes("/") ? opfPath.substring(0, opfPath.lastIndexOf("/") + 1) : "";
 
                 const opfFile = zipContent.file(opfPath);
-                if (!opfFile) throw new Error("Không tìm thấy file cấu trúc OPF.");
+                if (!opfFile) throw new Error("Không tìm thấy file OPF.");
                 
                 const opfText = await opfFile.async("text");
                 const opfDoc = parser.parseFromString(opfText, "text/xml");
 
-                updateProgress(50, "Đang tải định nghĩa CSS...");
+                updateProgress(50, "Đang tải CSS...");
                 let combinedCSS = "";
                 const cssItems = opfDoc.querySelectorAll("item[media-type='text/css']");
                 for (let item of cssItems) {
@@ -743,27 +758,22 @@
 
                 if (htmlFragments.length === 0) {
                     progressContainer.style.display = 'none';
-                    bookContent.innerHTML = '<div style="text-align:center; padding: 40px;">Không tìm thấy nội dung văn bản trong sách này.</div>';
+                    bookContent.innerHTML = '<div style="text-align:center; padding: 40px;">Không tìm thấy văn bản.</div>';
                     return;
                 }
 
-                updateProgress(90, "Đang định dạng giao diện song ngữ...");
+                updateProgress(90, "Đang định dạng song ngữ...");
 
                 setTimeout(() => {
                     bookContent.innerHTML = htmlFragments.join('');
-
                     formatBilingualLayout();
                     attachTitleEvents();
-
                     progressContainer.style.display = 'none';
 
                     const savedScrollPos = localStorage.getItem(`pos_${activeBookKey}`);
                     if (savedScrollPos) {
                         setTimeout(() => {
-                            readerContainer.scrollTo({
-                                top: parseInt(savedScrollPos),
-                                behavior: 'smooth'
-                            });
+                            readerContainer.scrollTo({ top: parseInt(savedScrollPos), behavior: 'smooth' });
                         }, 100);
                     } else {
                         readerContainer.scrollTop = 0;
@@ -773,7 +783,7 @@
             } catch (error) {
                 console.error(error);
                 progressContainer.style.display = 'none';
-                bookContent.innerHTML = `<div style="text-align:center; color: #e53e3e; padding: 40px;">Lỗi: Không thể đọc file EPUB.<br><small>${error.message}</small></div>`;
+                bookContent.innerHTML = `<div style="text-align:center; color: #e53e3e; padding: 40px;">Lỗi đọc file.<br><small>${error.message}</small></div>`;
             }
         });
 
@@ -791,17 +801,14 @@
 
         function attachTitleEvents() {
             const interactiveElements = bookContent.querySelectorAll('span[title], [title]');
-
             interactiveElements.forEach(el => {
                 const wordText = el.textContent.trim();
                 const titleValue = el.getAttribute('title');
-
                 if (!wordText || !titleValue) return;
 
                 el.addEventListener('click', (e) => {
                     e.stopPropagation();
                     currentActiveWord = wordText;
-
                     panelWordText.textContent = wordText;
                     panelDefText.textContent = titleValue;
                     meaningPanel.classList.add('active');
