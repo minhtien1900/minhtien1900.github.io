@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bilingual E-Reader V12</title>
+    <title>Bilingual E-Reader V13</title>
     <!-- Thư viện JSZip giải nén EPUB chuẩn xác 100% -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
     <style>
@@ -115,11 +115,11 @@
             align-items: center;
             overflow-x: auto;
             padding-bottom: 2px;
-            scrollbar-width: none; /* Ẩn thanh cuộn trên Firefox */
+            scrollbar-width: none;
         }
 
         .controls::-webkit-scrollbar {
-            display: none; /* Ẩn thanh cuộn trên Chrome/Safari */
+            display: none;
         }
 
         button.control-btn, .auto-speak-btn-top, .save-pos-btn, select.control-select {
@@ -173,7 +173,8 @@
         .reader-container {
             flex: 1;
             overflow-y: auto;
-            padding: 16px 12px 140px 12px;
+            /* Tăng padding bottom lên 180px để khi kéo xuống cuối không bị thanh panel che mất chữ */
+            padding: 16px 12px 180px 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -209,7 +210,7 @@
                 flex-wrap: wrap;
             }
             .reader-container {
-                padding: 30px 20px 140px 20px;
+                padding: 30px 20px 180px 20px;
             }
             .book-content {
                 max-width: 850px;
@@ -332,20 +333,25 @@
             overflow: hidden;
         }
 
+        /* Đẩy panel dịch từ lên cao hơn (cách đáy 60px) để né thanh điều hướng của trình duyệt */
         .bottom-meaning-panel {
             position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
+            bottom: 60px;
+            left: 10px;
+            right: 10px;
+            width: auto;
+            max-width: 700px;
+            margin: 0 auto;
             background-color: var(--bottom-panel-bg);
-            border-top: 1px solid var(--border-color);
-            padding: 16px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 18px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 -6px 20px var(--shadow-color);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
             z-index: 100;
-            transform: translateY(100%);
+            transform: translateY(180%);
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -403,6 +409,9 @@
                 padding: 40px;
                 border-radius: 12px;
             }
+            .bottom-meaning-panel {
+                bottom: 24px;
+            }
         }
 
         #epub-custom-styles { display: none; }
@@ -413,7 +422,7 @@
 
     <header>
         <div class="header-top">
-            <div class="brand-title">📖 Bilingual E-Reader V12</div>
+            <div class="brand-title">📖 Bilingual E-Reader V13</div>
             <div class="upload-section">
                 <label for="epub-file" class="upload-btn">📂 Mở EPUB</label>
                 <input type="file" id="epub-file" accept=".epub">
@@ -442,8 +451,8 @@
     <div class="main-container">
         <div class="reader-container" id="reader-container">
             <div class="welcome-screen" id="welcome-screen">
-                <h2>Trình Đọc Sách Song Ngữ V12</h2>
-                <p>Giao diện di động tối ưu: Thanh công cụ trượt ngang mượt mà, nút bấm rộng rãi, thao tác dễ dàng.</p>
+                <h2>Trình Đọc Sách Song Ngữ V13</h2>
+                <p>Đã khắc phục lỗi panel tra nghĩa bị che khuất bởi thanh điều hướng trình duyệt di động.</p>
             </div>
             <div class="book-content" id="book-content" style="display: none;"></div>
         </div>
@@ -461,7 +470,7 @@
             </div>
         </div>
 
-        <!-- Panel hiển thị nghĩa phía dưới màn hình -->
+        <!-- Panel hiển thị nghĩa nổi phía trên thanh điều hướng trình duyệt -->
         <div class="bottom-meaning-panel" id="meaning-panel">
             <div class="meaning-content">
                 <div class="panel-word" id="panel-word-text">--</div>
@@ -803,8 +812,13 @@
             const interactiveElements = bookContent.querySelectorAll('span[title], [title]');
             interactiveElements.forEach(el => {
                 const wordText = el.textContent.trim();
-                const titleValue = el.getAttribute('title');
+                let titleValue = el.getAttribute('title');
                 if (!wordText || !titleValue) return;
+
+                // Xử lý loại bỏ mã HTML thừa trong title nếu có
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = titleValue;
+                titleValue = tempDiv.textContent || tempDiv.innerText || titleValue;
 
                 el.addEventListener('click', (e) => {
                     e.stopPropagation();
